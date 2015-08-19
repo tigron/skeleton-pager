@@ -74,10 +74,8 @@ class Web_Pager {
 		if ($classname === null) {
 			throw new Exception('You must provide a classname');
 		}
+
 		$this->classname = $classname;
-		if (file_exists(LIB_PATH . '/' . ucfirst($this->classname) . '.php')) {
-			require_once LIB_PATH . '/' . ucfirst($this->classname) . '.php';
-		}
 	}
 
 	/**
