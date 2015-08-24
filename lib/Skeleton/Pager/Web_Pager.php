@@ -28,7 +28,7 @@ class Web_Pager {
 		'conditions' => [],
 		'direction' => 'asc',
 		'page' => 1,
-		'jump_to' => false,
+		'jump_to' => true,
 		'joins' => []
 	];
 
@@ -101,11 +101,25 @@ class Web_Pager {
 	/**
 	 * Set sort_permissions
 	 *
+	 * FIXME Delete this method, all calls should be replaced with
+	 * add_sort_permission();
+	 *
 	 * @access public
 	 * @param array $sort_permissions
 	 */
 	public function set_sort_permissions($sort_permissions) {
-		$this->options['sort_permissions'] = $sort_permissions;
+		throw new \Exception('calls to set_sort_permissions are deprecated, use add_sort_permission');
+	}
+
+	/**
+	 * Add a sort permission
+	 *
+	 * @access public
+	 * @param $column
+	 * @param $database_field
+	 */
+	public function add_sort_permission($database_field) {
+		$this->options['sort_permissions'][] = $database_field;
 	}
 
 	/**
@@ -119,33 +133,37 @@ class Web_Pager {
 	}
 
 	/**
-	 * Set limit
-	 *
-	 * @access public
-	 * @param int $limit
-	 */
-	public function set_limit($limit) {
-		$this->options['limit'] = $limit;
-	}
-
-	/**
 	 * Set condition
+	 *
+	 * FIXME calls to set_condition should be renamed to add_condition()
 	 *
 	 * @access public
 	 * @param string $field
 	 * @param string $comparison (optional)
 	 * @param string $value
 	 */
-	public function set_condition() {
+	public function set_condition($param1, $param2, $param3 = null) {
+		throw new \Exception('calls to set_condition are deprecated, use add_condition');
+	}
+
+	/**
+	 * Add condition
+	 *
+	 * @access public
+	 * @param string $field
+	 * @param string $comparison (optional)
+	 * @param string $value
+	 */
+	public function add_condition() {
 		$params = func_get_args();
 		$conditions = $this->options['conditions'];
 
 		$field = array_shift($params);
 
 		if (count($params) == 1) {
-			$conditions[$field] = ['=', array_shift($params)];
+			$conditions[$field][] = ['=', array_shift($params)];
 		} else {
-			$conditions[$field] = [array_shift($params), array_shift($params)];
+			$conditions[$field][] = $params;
 		}
 
 		$this->options['conditions'] = $conditions;
@@ -198,6 +216,16 @@ class Web_Pager {
 	}
 
 	/**
+	 * Get sum
+	 *
+	 * @access public
+	 * @param string $field
+	 */
+	public function get_sum($field) {
+		return call_user_func_array([$this->classname, 'sum'], [$field, $this->options['conditions'], $this->options['joins']]);
+	}
+
+	/**
 	 * Clear conditions
 	 *
 	 * @access public
@@ -245,10 +273,14 @@ class Web_Pager {
 			$direction = 'asc';
 		}
 
-		$hash = $this->create_options_hash($this->options['conditions'], $this->options['page'], $field_name, $direction);
+		$hash = $this->create_options_hash($this->options['conditions'], $this->options['page'], $field_name, $direction, $this->options['joins']);
 
-		$output = '<a href="' . $_SERVER['REDIRECT_URL'] . '?q=' . $hash . '">';
-		$output .= $header . ' ';
+		parse_str($_SERVER['QUERY_STRING'], $qry_str_parts);
+		$qry_str_parts['q'] = $hash;
+
+		$url = self::find_page_uri() . '?' . http_build_query($qry_str_parts);
+
+		$output = $header . ' ';
 
 		if ($this->options['sort'] == $field_name) {
 			if ($direction == 'desc') {
@@ -257,7 +289,11 @@ class Web_Pager {
 				$output .= '<span class="glyphicon glyphicon-chevron-down"></span>';
 			}
 		}
-		$output .= '</a>';
+
+		// Only allow sorting on fields actually in the permission list
+		if (isset($this->options['sort_permissions']) and in_array($field_name, $this->options['sort_permissions'])) {
+			$output = '<a href="' . $url . '">' . $output . '</a>';
+		}
 
 		return $output;
 	}
@@ -272,7 +308,7 @@ class Web_Pager {
 		parse_str($qry_str, $qry_str_parts);
 		unset($qry_str_parts['p']);
 		unset($qry_str_parts['q']);
-		$request_uri = base64_encode($_SERVER['REDIRECT_URL'] . '?' . implode('&', $qry_str_parts));
+		$request_uri = base64_encode(str_replace('/index', '', $_SERVER['REDIRECT_URL']) . '?' . implode('&', $qry_str_parts));
 
 		if ($_SERVER['REQUEST_METHOD'] != 'POST') {
 			if (!isset($_GET['q']) AND isset($_SESSION['pager'][$request_uri]) AND Config::$sticky_pager) {
@@ -282,26 +318,25 @@ class Web_Pager {
 			}
 		}
 
+		if (isset($_GET['p'])) {
+			$this->set_page($_GET['p']);
+		}
+
 		if (!isset($this->options['sort']) ) {
 			if (isset($this->options['sort_permissions']) and count($this->options['sort_permissions']) > 0) {
 				reset($this->options['sort_permissions']);
 				$this->options['sort'] = current($this->options['sort_permissions']);
 			} else {
-				$this->options['sort'] = 1;
+				$this->options['sort'] = null;
 			}
 		}
 
-		if (isset($_GET['p'])) {
-			$this->set_page($_GET['p']);
+		// Check if we are allowed to sort at all
+		if ($this->options['sort'] != null and !is_callable($this->options['sort']) and !in_array($this->options['sort'], $this->options['sort_permissions'])) {
+			throw new \Exception('Sorting not allowed for field ' . $this->options['sort']);
 		}
 
-		/**
-		 * We now have to rewrite the sort according to the permissions
-		 */
-		if (!isset($this->options['sort_permissions'][$this->options['sort']])) {
-			throw new Exception('Sorting not allowed for field ' . $this->options['sort']);
-		}
-		$sort = $this->options['sort_permissions'][$this->options['sort']];
+		$sort = $this->options['sort'];
 
 		$this->options['all'] = $all;
 
@@ -309,13 +344,13 @@ class Web_Pager {
 			$sort,
 			$this->options['direction'],
 			$this->options['page'],
-			$this->options['limit'],
 			$this->options['conditions'],
 			$this->options['all'],
 			$this->options['joins']
 		];
 
 		$this->items = call_user_func_array([$this->classname, 'get_paged'], $params);
+
 		$this->item_count = call_user_func_array([$this->classname, 'count'], [$this->options['conditions'], $this->options['joins']]);
 		$this->generate_links();
 
@@ -331,7 +366,7 @@ class Web_Pager {
 	 * @return array $options
 	 */
 	private function get_options_from_hash($hash) {
-		return unserialize( base64_decode($hash) );
+		return unserialize(base64_decode(urldecode($hash)));
 	}
 
 	/**
@@ -341,7 +376,6 @@ class Web_Pager {
 	 * @param array $conditions
 	 * @param int $page
 	 * @param int $sort
-	 * @param array $joins
 	 * @param string $direction
 	 */
 	private function create_options_hash($conditions, $page, $sort, $direction, $joins) {
@@ -468,21 +502,21 @@ class Web_Pager {
 				$str_links .= '<li><span class="jump-to-page"><input type="text" size="4" placeholder="#" id="jump-to-page-' . str_replace('_', '-', strtolower($this->classname)) . '"></span></li>';
 			}
 
-			$hash = $this->create_options_hash($this->options['conditions'], $number, $this->options['sort'], $this->options['direction']);
+			$hash = $this->create_options_hash($this->options['conditions'], $number, $this->options['sort'], $this->options['direction'], $this->options['joins']);
 
-			$qry_str = $url = '';
+			$qry_str = '';
 			if (isset($_SERVER['QUERY_STRING'])) {
 				$qry_str = $_SERVER['QUERY_STRING'];
 			}
+
 			parse_str($qry_str, $qry_str_parts);
+
 			$qry_str_parts['q'] = $hash;
 			if (isset($qry_str_parts['p'])) {
 				unset($qry_str_parts['p']);
 			}
-			if (isset($_SERVER['REDIRECT_URL'])) {
-				$url = $_SERVER['REDIRECT_URL'];
-			}
-			$url .= '?' . http_build_query($qry_str_parts);
+
+			$url = self::find_page_uri() . '?' . http_build_query($qry_str_parts);
 			$str_links .= $this->create_page_link($text, $url, $active);
 			if ($key+1 == count($links) AND $text != '&raquo;' AND $this->options['jump_to']) {
 				$str_links .= '<li><span class="jump-to-page"><input type="text" size="4" placeholder="#" id="jump-to-page-' . str_replace('_', '-', strtolower($this->classname)) . '"></span></li>';
@@ -491,5 +525,26 @@ class Web_Pager {
 
 		$content = '<ul class="pagination pagination-centered" id="pager-' . str_replace('_', '-', strtolower($this->classname)) . '">' . $str_links . '</ul>';
 		$this->links = $content;
+	}
+
+	/**
+	 * Find out how we should refer to the current page
+	 *
+	 * @access private
+	 * @return string $uri
+	 */
+	private static function find_page_uri() {
+		// We need to remove the base_uri from the link, because it will get
+		// rewritten afterwards. If we leave it, it will be prepended again,
+		// which makes the link invalid.
+		$application = \Skeleton\Core\Application::get();
+
+		if (strpos($_SERVER['REDIRECT_URL'], $application->config->base_uri) === 0) {
+			$url = substr($_SERVER['REDIRECT_URL'], strlen($application->config->base_uri) -1);
+		} else {
+			$url = $_SERVER['REDIRECT_URL'];
+		}
+
+		return $url;
 	}
 }
