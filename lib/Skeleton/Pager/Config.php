@@ -27,6 +27,6 @@ class Config {
 	 * @access public
 	 * @var bool $sticky_pager
 	 */
-	public static $sticky_pager = true;
+	public static $sticky_pager = false;
 
 }

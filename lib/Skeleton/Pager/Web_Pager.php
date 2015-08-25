@@ -29,7 +29,8 @@ class Web_Pager {
 		'direction' => 'asc',
 		'page' => 1,
 		'jump_to' => true,
-		'joins' => []
+		'joins' => [],
+		'sort_permissions' => [],
 	];
 
 	/**
@@ -328,7 +329,10 @@ class Web_Pager {
 		$this->generate_links();
 
 		$hash = $this->create_options_hash($this->options['conditions'], $this->options['page'], $this->options['sort'], $this->options['direction'], $this->options['joins']);
-		$_SESSION['pager'][$request_uri] = $hash;
+
+		if (Config::$sticky_pager) {
+			$_SESSION['pager'][$request_uri] = $hash;
+		}
 	}
 
 	/**
