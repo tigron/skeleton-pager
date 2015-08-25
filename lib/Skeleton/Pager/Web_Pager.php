@@ -99,19 +99,6 @@ class Web_Pager {
 	}
 
 	/**
-	 * Set sort_permissions
-	 *
-	 * FIXME Delete this method, all calls should be replaced with
-	 * add_sort_permission();
-	 *
-	 * @access public
-	 * @param array $sort_permissions
-	 */
-	public function set_sort_permissions($sort_permissions) {
-		throw new \Exception('calls to set_sort_permissions are deprecated, use add_sort_permission');
-	}
-
-	/**
 	 * Add a sort permission
 	 *
 	 * @access public
@@ -130,20 +117,6 @@ class Web_Pager {
 	 */
 	public function set_page($page) {
 		$this->options['page'] = $page;
-	}
-
-	/**
-	 * Set condition
-	 *
-	 * FIXME calls to set_condition should be renamed to add_condition()
-	 *
-	 * @access public
-	 * @param string $field
-	 * @param string $comparison (optional)
-	 * @param string $value
-	 */
-	public function set_condition($param1, $param2, $param3 = null) {
-		throw new \Exception('calls to set_condition are deprecated, use add_condition');
 	}
 
 	/**
