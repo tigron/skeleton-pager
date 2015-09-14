@@ -516,7 +516,7 @@ class Web_Pager {
 		// which makes the link invalid.
 		$application = \Skeleton\Core\Application::get();
 
-		if (strpos($_SERVER['REDIRECT_URL'], $application->config->base_uri) === 0) {
+		if (isset($application->config->base_uri) AND strpos($_SERVER['REDIRECT_URL'], $application->config->base_uri) === 0) {
 			$url = substr($_SERVER['REDIRECT_URL'], strlen($application->config->base_uri) -1);
 		} else {
 			$url = $_SERVER['REDIRECT_URL'];
