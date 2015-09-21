@@ -7,9 +7,11 @@
  * @author David Vandemaele <david@tigron.be>
  */
 
-namespace Skeleton\Pager;
+namespace Skeleton\Pager\Web;
 
-class Web_Pager {
+use \Skeleton\Pager\Config;
+
+class Pager {
 	/**
 	 * Classname
 	 *
