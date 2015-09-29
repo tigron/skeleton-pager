@@ -280,11 +280,13 @@ class Pager {
 	 * @access private
 	 */
 	public function page($all = false) {
+		$request_uri = str_replace('?' . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']);
 		$qry_str = $_SERVER['QUERY_STRING'];
+
 		parse_str($qry_str, $qry_str_parts);
 		unset($qry_str_parts['p']);
 		unset($qry_str_parts['q']);
-		$request_uri = base64_encode(str_replace('/index', '', $_SERVER['REQUEST_URI']) . '?' . implode('&', $qry_str_parts));
+		$request_uri = base64_encode(str_replace('/index', '', $request_uri) . '?' . implode('&', $qry_str_parts));
 
 		if ($_SERVER['REQUEST_METHOD'] != 'POST') {
 			if (!isset($_GET['q']) AND isset($_SESSION['pager'][$request_uri]) AND Config::$sticky_pager) {
@@ -518,10 +520,12 @@ class Pager {
 		// which makes the link invalid.
 		$application = \Skeleton\Core\Application::get();
 
-		if (isset($application->config->base_uri) AND strpos($_SERVER['REQUEST_URI'], $application->config->base_uri) === 0) {
-			$url = substr($_SERVER['REQUEST_URI'], strlen($application->config->base_uri) -1);
+		$request_uri = str_replace('?' . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']);
+
+		if (isset($application->config->base_uri) AND strpos($request_uri, $application->config->base_uri) === 0) {
+			$url = substr($request_uri, strlen($application->config->base_uri) -1);
 		} else {
-			$url = $_SERVER['REQUEST_URI'];
+			$url = $request_uri;
 		}
 
 		return $url;
