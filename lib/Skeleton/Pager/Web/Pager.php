@@ -88,6 +88,7 @@ class Pager {
 	 * @param string $sort
 	 */
 	public function set_sort($sort) {
+		$sort = $this->expand_field_name($sort);
 		$this->options['sort'] = $sort;
 	}
 
