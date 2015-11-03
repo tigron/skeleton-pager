@@ -22,11 +22,15 @@ trait Page {
 	 * @param array $extra_conditions
 	 * @param array $extra_joins
 	 */
-	public static function get_paged($sort = 1, $direction = 'asc', $page = 1, $extra_conditions = [], $all = false, $extra_joins = []) {
+	public static function get_paged($sort = null, $direction = 'asc', $page = 1, $extra_conditions = [], $all = false, $extra_joins = []) {
 		$db = self::trait_get_database();
 		$table = self::trait_get_database_table();
 		$where = self::trait_get_search_where($extra_conditions, $extra_joins);
 		$joins = self::trait_get_link_tables();
+
+		if ($sort === null) {
+			$sort = $table . '.' . self::trait_get_table_field_id();
+		}
 
 		// $sort is sometimes passed as null, which looks better, but we want 1
 		// by default
@@ -57,28 +61,53 @@ trait Page {
 			$direction = 'desc';
 		}
 
-		$sql = 'SELECT DISTINCT(' . $table . '.id) ' . "\n";
+		$sql = 'SELECT DISTINCT(' . $table . '.' . self::trait_get_table_field_id() . ') ' . "\n";
 		$sql .= 'FROM `' . $table . '`' . "\n";
 
-		// Determine if the sort is on the based table or on a joined table
-		// Make the JOINs mandatory if it is on a joined one
-		$join_mandatory = true;
+		/**
+		 * Automatic join: Join if a condition or a sort is set
+		 *
+		 * 1) Find the tables where a condition is set
+		 * 2) Find the table where a sort is set on
+		 * 3) Remove all joins that are not in 1 and 2
+		 */
+		$table_joins = array_merge(self::trait_get_joins(), $extra_joins);
 
-		if (is_object($sort) or strpos($sort, $table . '.') === 0 or strpos($sort, '.') === false) {
-			$join_mandatory = false;
-		}
-
-		// If the WHERE clause is empty, we don't need any joins at all
-		// unless we are sorting on a field not in the main table
-		if ($where != '' or $join_mandatory) {
-			foreach ($joins as $join) {
-				$sql .= 'LEFT OUTER JOIN `' . $join . '` on `' . $table . '`.' . $join . '_id = ' . $join . '.id ' . "\n";
+		$condition_joins = [];
+		foreach ($extra_conditions as $field => $condition) {
+			if ($field != '%search%') {
+				$condition_table = substr($field, 0, strpos($field, '.'));
+				$condition_joins[$condition_table] = $condition_table;
 			}
-
-			foreach ($extra_joins as $extra_join) {
-				$sql .= 'LEFT OUTER JOIN `' . $extra_join[0] . '` on `' . $extra_join[0] . '`.' . $extra_join[1] . ' = ' . $extra_join[2] . "\n";
+			if ($field == '%search%') {
+				if (count($condition[1]) == 0) {
+					$condition_joins['*'] = '*';
+				} else {
+					foreach ($condition[1] as $search_condition_field) {
+						$condition_table = substr($search_condition_field, 0, strpos($search_condition_field, '.'));
+						$condition_joins[$condition_table] = $condition_table;
+					}
+				}
 			}
 		}
+		$sort_condition_table = substr($sort, 0, strpos($sort, '.'));
+		$condition_joins[$sort_condition_table] = $sort_condition_table;
+
+		foreach ($table_joins as $key => $table_join) {
+			if (isset($condition_joins['*'])) {
+				continue;
+			}
+			if (!isset($condition_joins[$table_join[0]])) {
+				unset($table_joins[$key]);
+			}
+		}
+		foreach ($table_joins as $table_join) {
+			$sql .= 'LEFT OUTER JOIN `' . $table_join[0] . '` on `' . $table_join[0] . '`.' . $table_join[1] . ' = ' . $table_join[2] . "\n";
+		}
+		/**
+		 * End of automatic join
+		 */
+
 
 		if (isset(self::$object_text_fields) AND count(self::$object_text_fields) > 0) {
 			$sql .= 'LEFT OUTER JOIN object_text ON object_text.classname LIKE "' . get_class() . '" AND object_text.object_id=' . $table . '.id ';
@@ -310,33 +339,54 @@ trait Page {
 			}
 		}
 
-		if (isset($extra_conditions['%search%']) AND $extra_conditions['%search%'] != '') {
+
+
+
+		if (isset($extra_conditions['%search%']) AND $extra_conditions['%search%'][0] != '') {
 			$where .= 'AND (1 ';
 
-			$ec_search = explode(' ', trim($extra_conditions['%search%']));
+			$ec_search = explode(' ', trim($extra_conditions['%search%'][0]));
 
 			foreach ($ec_search as $element) {
-				$definitions = self::trait_get_table_definition($table);
-				$where .= ' AND (0 ';
-
-				foreach ($definitions as $definition) {
-					$where .= self::trait_get_comparison($table . '.' . $definition['field'], $element, $definition);
-				}
-
-				foreach ($joins as $join) {
-					$definitions = self::trait_get_table_definition($join);
-
+				if (count($extra_conditions['%search%'][1]) == 0) {
+					$definitions = self::trait_get_table_definition($table);
+					$where .= ' AND (0 ';
 
 					foreach ($definitions as $definition) {
-						$where .= self::trait_get_comparison($join . '.' . $definition['field'], $element, $definition);
+						$where .= self::trait_get_comparison($table . '.' . $definition['field'], $element, $definition);
 					}
-				}
 
-				foreach ($extra_joins as $extra_join) {
-					$definitions = self::trait_get_table_definition($extra_join[0]);
+					foreach ($joins as $join) {
+						$definitions = self::trait_get_table_definition($join);
 
-					foreach ($definitions as $definition) {
-						$where .= self::trait_get_comparison($extra_join[0] . '.' . $definition['field'], $element, $definition);
+
+						foreach ($definitions as $definition) {
+							$where .= self::trait_get_comparison($join . '.' . $definition['field'], $element, $definition);
+						}
+					}
+
+					foreach ($extra_joins as $extra_join) {
+						$definitions = self::trait_get_table_definition($extra_join[0]);
+
+						foreach ($definitions as $definition) {
+							$where .= self::trait_get_comparison($extra_join[0] . '.' . $definition['field'], $element, $definition);
+						}
+					}
+				} else {
+					$where .= ' AND (0 ';
+					$definitions = [];
+
+					foreach ($extra_conditions['%search%'][1] as $field) {
+						list($condition_table, $condition_field) = explode('.', $field);
+						if (!isset($definitions[$condition_table])) {
+							$definitions[$condition_table] = self::trait_get_table_definition($condition_table);
+						}
+						foreach ($definitions[$condition_table] as $definition) {
+							if ($definition['field'] == $condition_field) {
+								$where .= self::trait_get_comparison($field, $element, $definition);
+							}
+						}
+
 					}
 				}
 
@@ -377,7 +427,7 @@ trait Page {
 
 		switch ($type) {
 			case 'count':
-				$sql = 'SELECT COUNT(DISTINCT(' . $table . '.id)) ';
+				$sql = 'SELECT COUNT(DISTINCT(' . $table . '.' . self::trait_get_table_field_id() . ')) ';
 				break;
 			case 'sum':
 				if (!isset($extra_parameters['field'])) {
@@ -391,26 +441,92 @@ trait Page {
 				throw new Exception('Unsupported aggregate');
 		}
 
-		$sql .= 'FROM `' . $table . '` ';
+		$sql .=  "\n" . 'FROM `' . $table . '` ' . "\n";
 
-		if ($where != '' or $join_mandatory == true) {
-			foreach ($joins as $join) {
-				$sql .= 'LEFT OUTER JOIN `' . $join . '` on `' . $table . '`.' . $join . '_id = ' . $join . '.id ';
+		/**
+		 * Automatic join: Join if a condition or a sort is set
+		 *
+		 * 1) Find the tables where a condition is set
+		 * 2) Find the table where a sort is set on
+		 * 3) Remove all joins that are not in 1 and 2
+		 */
+		$table_joins = array_merge(self::trait_get_joins(), $extra_joins);
+
+		$condition_joins = [];
+		foreach ($extra_conditions as $field => $condition) {
+			if ($field != '%search%') {
+				$condition_table = substr($field, 0, strpos($field, '.'));
+				$condition_joins[$condition_table] = $condition_table;
 			}
-
-			foreach ($extra_joins as $extra_join) {
-				$sql .= 'LEFT OUTER JOIN `' . $extra_join[0] . '` on `' . $extra_join[0] . '`.' . $extra_join[1] . ' = ' . $extra_join[2] . "\n";
-			}
-
-			if (isset(self::$object_text_fields) AND count(self::$object_text_fields) > 0) {
-				$sql .= 'LEFT OUTER JOIN object_text on object_text.classname LIKE "' . get_class() . '" AND object_text.object_id=' . $table . '.id ' . "\n";
+			if ($field == '%search%') {
+				if (count($condition[1]) == 0) {
+					$condition_joins['*'] = '*';
+				} else {
+					foreach ($condition[1] as $search_condition_field) {
+						$condition_table = substr($search_condition_field, 0, strpos($search_condition_field, '.'));
+						$condition_joins[$condition_table] = $condition_table;
+					}
+				}
 			}
 		}
 
-		$sql .= 'WHERE 1 ' . $where;
+		foreach ($table_joins as $key => $table_join) {
+			if (isset($condition_joins['*'])) {
+				continue;
+			}
+			if (!isset($condition_joins[$table_join[0]])) {
+				unset($table_joins[$key]);
+			}
+		}
+		foreach ($table_joins as $table_join) {
+			$sql .= 'LEFT OUTER JOIN `' . $table_join[0] . '` on `' . $table_join[0] . '`.' . $table_join[1] . ' = ' . $table_join[2] . "\n";
+		}
+		/**
+		 * End of automatic join
+		 */
 
+
+		if (isset(self::$object_text_fields) AND count(self::$object_text_fields) > 0) {
+			$sql .= 'LEFT OUTER JOIN object_text ON object_text.classname LIKE "' . get_class() . '" AND object_text.object_id=' . $table . '.id ';
+			if ($sorter == 'db' AND in_array($sort, self::$object_text_fields)) {
+				if (isset($extra_conditions['language_id'])) {
+					$language_id = $extra_conditions['language_id'][1];
+				} else {
+					$language_id = \Skeleton\Core\Application::get()->language->id;
+				}
+
+				$sql .= 'AND object_text.label = ' . $db->quote($sort) . ' AND object_text.language_id = ' . $language_id . ' ';
+
+				$sort = 'object_text.content';
+			}
+			$sql .= "\n";
+		}
+
+
+		$sql .= 'WHERE 1 ' . $where;
 		$count = $db->get_one($sql);
 
 		return $count;
+	}
+
+	private static function trait_get_joins() {
+		$db = self::trait_get_database();
+		$table = self::trait_get_database_table();
+		$fields = $db->get_columns($table);
+		$tables = $db->get_column('SHOW tables');
+
+		$joins = [];
+		foreach ($fields as $field) {
+			if (substr($field, -3) != '_id') {
+				continue;
+			}
+
+			$remote_table = substr($field, 0, -3);
+
+			if (in_array($remote_table, $tables)) {
+				$joins[] = [ $remote_table, 'id', $field ];
+			}
+		}
+		return $joins;
 	}
 }

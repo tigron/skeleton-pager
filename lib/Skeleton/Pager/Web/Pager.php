@@ -109,6 +109,7 @@ class Pager {
 	 * @param $database_field
 	 */
 	public function add_sort_permission($database_field) {
+		$database_field = $this->expand_field_name($database_field);
 		$this->options['sort_permissions'][] = $database_field;
 	}
 
@@ -135,6 +136,7 @@ class Pager {
 		$conditions = $this->options['conditions'];
 
 		$field = array_shift($params);
+		$field = $this->expand_field_name($field);
 
 		if (count($params) == 1) {
 			$conditions[$field][] = ['=', array_shift($params)];
@@ -149,12 +151,21 @@ class Pager {
 	 * Add join
 	 *
 	 * @access public
-	 * @param string $table
-	 * @param string $table_with
+	 * @param string $remote_table
+	 * @param string $remote_id
+	 * @param string $local_field
 	 */
-	public function add_join() {
-		$params = func_get_args();
-		$this->options['joins'][] = $params;
+	public function add_join($remote_table, $remote_id, $local_field) {
+		$local_field = $this->expand_field_name($local_field);
+		/*
+			$extra_join = [
+				$remote_table,
+				$remote_id,
+				$local_field
+			]
+		*/
+
+		$this->options['joins'][] = [ $remote_table, $remote_id, $local_field ];
 	}
 
 	/**
@@ -173,8 +184,11 @@ class Pager {
 	 * @access public
 	 * @param string $search
 	 */
-	public function set_search($search) {
-		$this->options['conditions']['%search%'] = $search;
+	public function set_search($search, $search_fields = []) {
+		foreach ($search_fields as $key => $search_field) {
+			$search_fields[$key] = $this->expand_field_name($search_field);
+		}
+		$this->options['conditions']['%search%'] = [ $search, $search_fields ];
 	}
 
 	/**
@@ -185,7 +199,7 @@ class Pager {
 	 */
 	public function get_search() {
 		if (isset($this->options['conditions']['%search%'])) {
-			return $this->options['conditions']['%search%'];
+			return $this->options['conditions']['%search%'][0];
 		} else {
 			return '';
 		}
@@ -239,6 +253,8 @@ class Pager {
 	 * @access public
 	 */
 	public function create_header($header, $field_name) {
+		$field_name = $this->expand_field_name($field_name);
+
 		if ($this->options['sort'] == $field_name) {
 			if ($this->options['direction'] == 'asc') {
 				$direction = 'desc';
@@ -529,5 +545,21 @@ class Pager {
 		}
 
 		return $url;
+	}
+
+	/**
+	 * expand field name
+	 * If a fieldname without a '.' is given, it will be prepended with the table name
+	 *
+	 * @access private
+	 * @param $string $field_name
+	 * @return string $expanded_field_name
+	 */
+	private function expand_field_name($field_name) {
+		if (strpos($field_name, '.') === false) {
+			return strtolower($this->classname) . '.' . $field_name;
+		} else {
+			return $field_name;
+		}
 	}
 }
