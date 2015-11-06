@@ -485,24 +485,6 @@ trait Page {
 		 * End of automatic join
 		 */
 
-
-		if (isset(self::$object_text_fields) AND count(self::$object_text_fields) > 0) {
-			$sql .= 'LEFT OUTER JOIN object_text ON object_text.classname LIKE "' . get_class() . '" AND object_text.object_id=' . $table . '.id ';
-			if ($sorter == 'db' AND in_array($sort, self::$object_text_fields)) {
-				if (isset($extra_conditions['language_id'])) {
-					$language_id = $extra_conditions['language_id'][1];
-				} else {
-					$language_id = \Skeleton\Core\Application::get()->language->id;
-				}
-
-				$sql .= 'AND object_text.label = ' . $db->quote($sort) . ' AND object_text.language_id = ' . $language_id . ' ';
-
-				$sort = 'object_text.content';
-			}
-			$sql .= "\n";
-		}
-
-
 		$sql .= 'WHERE 1 ' . $where;
 		$count = $db->get_one($sql);
 
