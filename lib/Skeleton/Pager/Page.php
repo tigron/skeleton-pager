@@ -102,7 +102,7 @@ trait Page {
 			}
 		}
 		foreach ($table_joins as $table_join) {
-			$sql .= 'LEFT OUTER JOIN `' . $table_join[0] . '` on `' . $table_join[0] . '`.' . $table_join[1] . ' = ' . $table_join[2] . "\n";
+			$sql .= 'LEFT OUTER JOIN `' . $table_join[0] . '` on `' . $table_join[0] . '`.' . $table_join[1] . ' = `' . $table . '`.' . $table_join[2] . "\n";
 		}
 		/**
 		 * End of automatic join
@@ -479,7 +479,7 @@ trait Page {
 			}
 		}
 		foreach ($table_joins as $table_join) {
-			$sql .= 'LEFT OUTER JOIN `' . $table_join[0] . '` on `' . $table_join[0] . '`.' . $table_join[1] . ' = ' . $table_join[2] . "\n";
+			$sql .= 'LEFT OUTER JOIN `' . $table_join[0] . '` on `' . $table_join[0] . '`.' . $table_join[1] . ' = `' . $table . '`.' . $table_join[2] . "\n";
 		}
 		/**
 		 * End of automatic join
