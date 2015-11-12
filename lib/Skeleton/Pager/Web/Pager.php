@@ -149,6 +149,56 @@ class Pager {
 	}
 
 	/**
+	 * Has condition
+	 *
+	 * @access public
+	 * @param string $field
+	 * @param string $comparison (optional)
+	 * @param string $value
+	 */
+	public function has_condition() {
+		$params = func_get_args();
+		$condition = [];
+
+		$field = array_shift($params);
+		$field = $this->expand_field_name($field);
+
+		if (count($params) == 1) {
+			$condition[$field] = ['=', array_shift($params)];
+		} else {
+			$condition[$field] = $params;
+		}
+
+		foreach ($this->options['conditions'] as $cond_field => $stored_conditions) {
+			if ($field != $cond_field) {
+				continue;
+			}
+
+			foreach ($stored_conditions as $stored_condition) {
+				$stored_condition = [ $field => $stored_condition ];
+
+				if (!is_array($stored_condition[$field][1]) AND $stored_condition == $condition) {
+					return true;
+				}
+
+				if (is_array($stored_condition[$field][1])) {
+					$value = $condition[$field][1];
+
+					if (in_array($value, $stored_condition[$field][1])) {
+						return true;
+					}
+				}
+
+
+				if ( [ $field => $stored_condition ] == $condition ) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Add join
 	 *
 	 * @access public
@@ -535,7 +585,9 @@ class Pager {
 		// We need to remove the base_uri from the link, because it will get
 		// rewritten afterwards. If we leave it, it will be prepended again,
 		// which makes the link invalid.
-		$application = \Skeleton\Core\Application::get();
+		if (class_exists('\Skeleton\Core\Application')) {
+			$application = \Skeleton\Core\Application::get();
+		}
 
 		$request_uri = str_replace('?' . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']);
 

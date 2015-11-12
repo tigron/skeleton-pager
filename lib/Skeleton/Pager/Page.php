@@ -148,7 +148,7 @@ trait Page {
 
 		foreach ($extra_conditions as $key => $value) {
 			foreach ($objects as $o_key => $object) {
-				if (!is_callable([$object, $key])) {
+				if (!method_exists($object, $key) or !is_callable([$object, $key])) {
 					continue;
 				}
 
@@ -307,6 +307,7 @@ trait Page {
 
 		foreach ($extra_conditions as $key => $condition_array) {
 			if ($key != '%search%' AND !is_callable($key) AND !$object->hasMethod($key)) {
+
 				foreach ($condition_array as $value) {
 
 					if ($value[0] == 'IN') {
