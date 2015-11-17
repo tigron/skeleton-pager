@@ -104,11 +104,10 @@ trait Page {
 		foreach ($table_joins as $table_join) {
 			$sql .= 'LEFT OUTER JOIN `' . $table_join[0] . '` on `' . $table_join[0] . '`.' . $table_join[1] . ' = ' . $table_join[2] . "\n";
 		}
+
 		/**
 		 * End of automatic join
 		 */
-
-
 		if (isset(self::$object_text_fields) AND count(self::$object_text_fields) > 0) {
 			$sql .= 'LEFT OUTER JOIN object_text ON object_text.classname LIKE "' . get_class() . '" AND object_text.object_id=' . $table . '.id ';
 			if ($sorter == 'db' AND in_array($sort, self::$object_text_fields)) {
