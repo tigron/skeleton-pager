@@ -28,6 +28,7 @@ class Pager {
 	 */
 	private $options = [
 		'conditions' => [],
+		'sort' => null,
 		'direction' => 'asc',
 		'page' => 1,
 		'jump_to' => true,
@@ -274,6 +275,11 @@ class Pager {
 	public function clear_conditions() {
 		unset($this->options['conditions']);
 		$this->options['conditions'] = [];
+
+		if (Config::$sticky_pager) {
+			$pager_uri_key = self::get_pager_uri_key();
+			unset($_SESSION['pager'][$pager_uri_key]);
+		}
 	}
 
 	/**
@@ -284,6 +290,13 @@ class Pager {
 	 */
 	public function clear_condition($key) {
 		unset($this->options['conditions'][$key]);
+
+		if (Config::$sticky_pager) {
+			$hash = $this->create_options_hash($this->options['conditions'], $this->options['page'], $this->options['sort'], $this->options['direction'], $this->options['joins']);
+
+			$pager_uri_key = self::get_pager_uri_key();
+			$_SESSION['pager'][$pager_uri_key] = $hash;
+		}
 	}
 
 	/**
@@ -347,17 +360,11 @@ class Pager {
 	 * @access private
 	 */
 	public function page($all = false) {
-		$request_uri = str_replace('?' . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']);
-		$qry_str = $_SERVER['QUERY_STRING'];
-
-		parse_str($qry_str, $qry_str_parts);
-		unset($qry_str_parts['p']);
-		unset($qry_str_parts['q']);
-		$request_uri = base64_encode(str_replace('/index', '', $request_uri) . '?' . implode('&', $qry_str_parts));
+		$pager_uri_key = self::get_pager_uri_key();
 
 		if ($_SERVER['REQUEST_METHOD'] != 'POST') {
-			if (!isset($_GET['q']) AND isset($_SESSION['pager'][$request_uri]) AND Config::$sticky_pager) {
-				$this->options = array_merge($this->options, $this->get_options_from_hash($_SESSION['pager'][$request_uri]));
+			if (!isset($_GET['q']) AND isset($_SESSION['pager'][$pager_uri_key]) AND Config::$sticky_pager) {
+				$this->options = array_merge($this->options, $this->get_options_from_hash($_SESSION['pager'][$pager_uri_key]));
 			} elseif (isset($_GET['q'])) {
 				$this->options = array_merge($this->options, $this->get_options_from_hash($_GET['q']));
 			}
@@ -367,17 +374,13 @@ class Pager {
 			$this->set_page($_GET['p']);
 		}
 
-		if (!isset($this->options['sort']) ) {
-			if (isset($this->options['sort_permissions']) and count($this->options['sort_permissions']) > 0) {
-				reset($this->options['sort_permissions']);
-				$this->options['sort'] = current($this->options['sort_permissions']);
-			} else {
-				$this->options['sort'] = null;
-			}
+		if ($this->options['sort'] === null AND isset($this->options['sort_permissions']) AND count($this->options['sort_permissions']) > 0) {
+			reset($this->options['sort_permissions']);
+			$this->options['sort'] = current($this->options['sort_permissions']);
 		}
 
 		// Check if we are allowed to sort at all
-		if ($this->options['sort'] != null and !is_callable($this->options['sort']) and !in_array($this->options['sort'], $this->options['sort_permissions'])) {
+		if ($this->options['sort'] != null AND !is_callable($this->options['sort']) AND !in_array($this->options['sort'], $this->options['sort_permissions'])) {
 			throw new \Exception('Sorting not allowed for field ' . $this->options['sort']);
 		}
 
@@ -402,7 +405,7 @@ class Pager {
 		$hash = $this->create_options_hash($this->options['conditions'], $this->options['page'], $this->options['sort'], $this->options['direction'], $this->options['joins']);
 
 		if (Config::$sticky_pager) {
-			$_SESSION['pager'][$request_uri] = $hash;
+			$_SESSION['pager'][$pager_uri_key] = $hash;
 		}
 	}
 
@@ -614,5 +617,23 @@ class Pager {
 		} else {
 			return $field_name;
 		}
+	}
+
+	/**
+	 * Get key for storing the options hash in session
+	 *
+	 * @access private
+	 * @return string $pager_uri_key
+	 */
+	private static function get_pager_uri_key() {
+		$request_uri = str_replace('?' . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']);
+		$qry_str = $_SERVER['QUERY_STRING'];
+
+		parse_str($qry_str, $qry_str_parts);
+		unset($qry_str_parts['p']);
+		unset($qry_str_parts['q']);
+		$pager_uri_key = base64_encode(str_replace('/index', '', $request_uri) . '?' . implode('&', $qry_str_parts));
+
+		return $pager_uri_key;
 	}
 }
