@@ -149,6 +149,17 @@ class Pager {
 	}
 
 	/**
+	 * remove condition
+	 *
+	 * @access public
+	 * @param string $field
+	 */
+	public function remove_condition($field) {
+		$field = $this->expand_field_name($field);
+		unset($this->options['conditions'][$field]);
+	}
+
+	/**
 	 * Has condition
 	 *
 	 * @access public
