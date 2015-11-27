@@ -364,9 +364,9 @@ class Pager {
 
 		if ($_SERVER['REQUEST_METHOD'] != 'POST') {
 			if (!isset($_GET['q']) AND isset($_SESSION['pager'][$pager_uri_key]) AND Config::$sticky_pager) {
-				$this->options = array_merge($this->options, $this->get_options_from_hash($_SESSION['pager'][$pager_uri_key]));
+				$this->options = array_replace_recursive($this->options, $this->get_options_from_hash($_SESSION['pager'][$pager_uri_key]));
 			} elseif (isset($_GET['q'])) {
-				$this->options = array_merge($this->options, $this->get_options_from_hash($_GET['q']));
+				$this->options = array_replace_recursive($this->options, $this->get_options_from_hash($_GET['q']));
 			}
 		}
 
