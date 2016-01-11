@@ -489,6 +489,10 @@ trait Page {
 		/**
 		 * End of automatic join
 		 */
+		if (isset(self::$object_text_fields) AND count(self::$object_text_fields) > 0) {
+  			$sql .= 'LEFT OUTER JOIN object_text ON object_text.classname LIKE "' . get_class() . '" AND object_text.object_id=' . $table . '.id ';
+  			$sql .= "\n";
+  		}
 
 		$sql .= 'WHERE 1 ' . $where;
 		$count = $db->get_one($sql);
