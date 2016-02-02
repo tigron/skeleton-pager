@@ -60,8 +60,8 @@ trait Page {
 		if (strtolower($direction) != 'asc') {
 			$direction = 'desc';
 		}
-		$sql = 'SELECT `' . $table . '`.' . self::trait_get_table_field_id() . ' FROM `' . $db->escape($table) . '` WHERE `' . $table . '`.' . self::trait_get_table_field_id() . ' IN ( ' . "\n";
-		$sql .= 'SELECT ' . $table . '.' . self::trait_get_table_field_id() . "\n";
+		$sql = 'SELECT DISTINCT(id) FROM ( ' . "\n";
+		$sql .= 'SELECT ' . $table . '.' . self::trait_get_table_field_id() . ' as id ' . "\n";
 		$sql .= 'FROM `' . $table . '`' . "\n";
 
 		/**
@@ -139,6 +139,7 @@ trait Page {
 			$sql .= 'ORDER BY ' . $sort . ' ' . $direction;
 		}
 		$sql .= "\n" . ')' . "\n";
+		$sql .= ' alias ' . "\n";
 
 		if ($all !== true AND $sorter == 'db') {
 			$sql .= ' LIMIT ' . ($page-1)*$limit . ', ' . $limit;
