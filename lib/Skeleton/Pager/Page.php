@@ -143,8 +143,7 @@ trait Page {
 		if ($all !== true AND $sorter == 'db') {
 			$sql .= ' LIMIT ' . ($page-1)*$limit . ', ' . $limit;
 		}
-print_r($sql);
-die();
+
 		$ids = $db->get_column($sql);
 
 		$objects = [];
