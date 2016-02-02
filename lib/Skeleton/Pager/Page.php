@@ -60,7 +60,7 @@ trait Page {
 		if (strtolower($direction) != 'asc') {
 			$direction = 'desc';
 		}
-		$sql = 'SELECT ' . $table . '.' . self::trait_get_table_field_id() . ' FROM ' . $table . ' WHERE ' . self::trait_get_table_field_id() . ' IN ( ' . "\n";
+		$sql = 'SELECT `' . $table . '`.' . self::trait_get_table_field_id() . ' FROM `' . $db->escape($table) . '` WHERE `' . $table . '`.' . self::trait_get_table_field_id() . ' IN ( ' . "\n";
 		$sql .= 'SELECT ' . $table . '.' . self::trait_get_table_field_id() . "\n";
 		$sql .= 'FROM `' . $table . '`' . "\n";
 
@@ -143,7 +143,8 @@ trait Page {
 		if ($all !== true AND $sorter == 'db') {
 			$sql .= ' LIMIT ' . ($page-1)*$limit . ', ' . $limit;
 		}
-
+print_r($sql);
+die();
 		$ids = $db->get_column($sql);
 
 		$objects = [];
