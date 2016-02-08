@@ -60,8 +60,8 @@ trait Page {
 		if (strtolower($direction) != 'asc') {
 			$direction = 'desc';
 		}
-		$sql = 'SELECT DISTINCT(id) FROM ( ' . "\n";
-		$sql .= 'SELECT ' . $table . '.' . self::trait_get_table_field_id() . ' as id ' . "\n";
+
+		$sql = 'SELECT ' . $table . '.' . self::trait_get_table_field_id() . ' as id ' . "\n";
 		$sql .= 'FROM `' . $table . '`' . "\n";
 
 		/**
@@ -71,7 +71,7 @@ trait Page {
 		 * 2) Find the table where a sort is set on
 		 * 3) Remove all joins that are not in 1 and 2
 		 */
-		$table_joins = array_merge(self::trait_get_joins(), $extra_joins);
+		$table_joins = self::trait_get_joins();
 
 		$condition_joins = [];
 		foreach ($extra_conditions as $field => $condition) {
@@ -108,26 +108,6 @@ trait Page {
 		/**
 		 * End of automatic join
 		 */
-		if (isset(self::$object_text_fields) AND count(self::$object_text_fields) > 0) {
-			if (strpos($sort, '.') !== false) {
-				$label = array_pop(explode('.', $sort));
-			} else {
-				$label = $sort;
-			}
-			$sql .= 'LEFT OUTER JOIN object_text ON object_text.classname LIKE "' . get_class() . '" AND object_text.object_id=' . $table . '.id ';
-			if ($sorter == 'db' AND in_array($label, self::$object_text_fields)) {
-				if (isset($extra_conditions['language_id'])) {
-					$language_id = $extra_conditions['language_id'][1];
-				} else {
-					$language_id = \Skeleton\Core\Application::get()->language->id;
-				}
-
-				$sql .= 'AND object_text.label = ' . $db->quote($label) . ' AND object_text.language_id = ' . $language_id . ' ';
-
-				$sort = 'object_text.content';
-			}
-			$sql .= "\n";
-		}
 
 		$sql .= 'WHERE 1 ' . $where . "\n";
 
@@ -138,8 +118,6 @@ trait Page {
 
 			$sql .= 'ORDER BY ' . $sort . ' ' . $direction;
 		}
-		$sql .= "\n" . ')' . "\n";
-		$sql .= ' alias ' . "\n";
 
 		if ($all !== true AND $sorter == 'db') {
 			$sql .= ' LIMIT ' . ($page-1)*$limit . ', ' . $limit;
@@ -304,6 +282,7 @@ trait Page {
 	private static function trait_get_search_where($extra_conditions = [], $extra_joins = []) {
 		$db = self::trait_get_database();
 		$table = self::trait_get_database_table();
+		$field_id = self::trait_get_table_field_id();
 		$definitions = self::trait_get_table_definition($table);
 		$joins = self::trait_get_link_tables();
 
@@ -312,32 +291,98 @@ trait Page {
 		$object = new \ReflectionClass(get_class());
 
 		foreach ($extra_conditions as $key => $condition_array) {
-			if ($key != '%search%' AND !is_callable($key) AND !$object->hasMethod($key)) {
+			if ($key == '%search%' OR is_callable($key) AND !$object->hasMethod($key)) {
+				continue;
+			}
 
-				foreach ($condition_array as $value) {
-
-					if ($value[0] == 'IN') {
-						if (is_array($value[1])) {
-							$list = implode($value[1], ', ');
-						} else {
-							$list = $value[1];
-						}
-
-						$where .= 'AND ' . $db->quote_identifier($key) . ' IN (' . $list . ')' . "\n\t";
-					} elseif (is_array($value[1])) {
-						$where .= 'AND (0';
-						foreach ($value[1] as $element) {
-							$where .= ' OR ' . $db->quote_identifier($key) . ' ' . $value[0] . ' ' . $db->quote($element);
-						}
-						$where .= ') ';
-					} elseif ($value[0] == 'BETWEEN') {
-						$where .= 'AND ' . $db->quote_identifier($key) . ' BETWEEN ' . $db->quote($value[1]) . ' AND ' . $db->quote($value[2]) . "\n\t";
-					} else {
-						$where .= 'AND ' . $db->quote_identifier($key) . ' ' . $value[0] . ' ' . $db->quote($value[1]) . ' ' . "\n\t";
-					}
+			$extra_join_condition = false;
+			list($join_table, $field) = explode('.', $key);
+			foreach ($extra_joins as $extra_join) {
+				if ($extra_join[0] == $join_table) {
+					$extra_join_condition = true;
 				}
 			}
+
+			if ($extra_join_condition) {
+				continue;
+			}
+
+			foreach ($condition_array as $value) {
+
+				if ($value[0] == 'IN') {
+					if (is_array($value[1])) {
+						$list = implode($value[1], ', ');
+					} else {
+						$list = $value[1];
+					}
+
+					$where .= 'AND ' . $db->quote_identifier($key) . ' IN (' . $list . ')' . "\n\t";
+				} elseif (is_array($value[1])) {
+					$where .= 'AND (0';
+					foreach ($value[1] as $element) {
+						$where .= ' OR ' . $db->quote_identifier($key) . ' ' . $value[0] . ' ' . $db->quote($element);
+					}
+					$where .= ') ';
+				} elseif ($value[0] == 'BETWEEN') {
+					$where .= 'AND ' . $db->quote_identifier($key) . ' BETWEEN ' . $db->quote($value[1]) . ' AND ' . $db->quote($value[2]) . "\n\t";
+				} else {
+					$where .= 'AND ' . $db->quote_identifier($key) . ' ' . $value[0] . ' ' . $db->quote($value[1]) . ' ' . "\n\t";
+
+				}
+			}
+
 		}
+
+
+		foreach ($extra_conditions as $key => $condition_array) {
+			if ($key == '%search%' OR is_callable($key) AND !$object->hasMethod($key)) {
+				continue;
+			}
+
+			$extra_join_condition = false;
+			$join = null;
+			list($join_table, $field) = explode('.', $key);
+			foreach ($extra_joins as $extra_join) {
+				if ($extra_join[0] == $join_table) {
+					$extra_join_condition = true;
+					$join = $extra_join;
+				}
+			}
+
+			if (!$extra_join_condition) {
+				continue;
+			}
+
+			$where .= 'AND ' . $table . '.' . $field_id . ' IN ( SELECT ' . $join[1] . ' FROM ' . $join[0] . ' WHERE 1 ';
+
+			foreach ($condition_array as $value) {
+
+				if ($value[0] == 'IN') {
+					if (is_array($value[1])) {
+						$list = implode($value[1], ', ');
+					} else {
+						$list = $value[1];
+					}
+
+					$where .= 'AND ' . $db->quote_identifier($key) . ' IN (' . $list . ')' . "\n\t";
+				} elseif (is_array($value[1])) {
+					$where .= 'AND (0';
+					foreach ($value[1] as $element) {
+						$where .= ' OR ' . $db->quote_identifier($key) . ' ' . $value[0] . ' ' . $db->quote($element);
+					}
+					$where .= ') ';
+				} elseif ($value[0] == 'BETWEEN') {
+					$where .= 'AND ' . $db->quote_identifier($key) . ' BETWEEN ' . $db->quote($value[1]) . ' AND ' . $db->quote($value[2]) . "\n\t";
+				} else {
+					$where .= 'AND ' . $db->quote_identifier($key) . ' ' . $value[0] . ' ' . $db->quote($value[1]) . ' ' . "\n\t";
+				}
+			}
+
+			$where .= ') ';
+
+		}
+
+
 
 		if (isset(self::$object_text_fields) AND count(self::$object_text_fields) > 0) {
 			// Object Text fields: language_id
@@ -345,9 +390,6 @@ trait Page {
 				$where .= 'AND object_text.language_id = ' . $db->quote($extra_conditions['language_id'][1]) . ' ' . "\n\t";
 			}
 		}
-
-
-
 
 		if (isset($extra_conditions['%search%']) AND $extra_conditions['%search%'][0] != '') {
 			$where .= 'AND (1 ';
@@ -398,7 +440,9 @@ trait Page {
 				}
 
 				if (isset(self::$object_text_fields) AND count(self::$object_text_fields) > 0) {
-					$where .= 'OR object_text.content LIKE \'%' . $db->quote($element, false) . '%\' ' . "\n\t";
+					$where .= 'OR ' . $table . '.' . $field_id . ' IN (
+						SELECT object_id FROM object_text WHERE object_id=' . $table . '.' . $field_id . ' AND object_text.classname LIKE "' . get_class() . '" AND content LIKE "%' . $db->quote($element, false) . '%"
+					)';
 				}
 
 				$where .= ') ';
@@ -434,7 +478,7 @@ trait Page {
 
 		switch ($type) {
 			case 'count':
-				$sql = 'SELECT COUNT(DISTINCT(' . $table . '.' . self::trait_get_table_field_id() . ')) ';
+				$sql = 'SELECT COUNT(' . $table . '.' . self::trait_get_table_field_id() . ') ';
 				break;
 			case 'sum':
 				if (!isset($extra_parameters['field'])) {
@@ -457,7 +501,7 @@ trait Page {
 		 * 2) Find the table where a sort is set on
 		 * 3) Remove all joins that are not in 1 and 2
 		 */
-		$table_joins = array_merge(self::trait_get_joins(), $extra_joins);
+		$table_joins = self::trait_get_joins();
 
 		$condition_joins = [];
 		foreach ($extra_conditions as $field => $condition) {
