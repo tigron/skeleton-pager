@@ -89,6 +89,10 @@ class Pager {
 	 * @param string $sort
 	 */
 	public function set_sort($sort) {
+		$object = new \ReflectionClass($this->classname);
+		if (is_callable($sort) === false AND $object->hasMethod($sort) === false) {
+			$sort = $this->expand_field_name($sort);
+		}
 		$this->options['sort'] = $sort;
 	}
 
@@ -329,7 +333,10 @@ class Pager {
 	 * @access public
 	 */
 	public function create_header($header, $field_name) {
-		$field_name = $this->expand_field_name($field_name);
+		$object = new \ReflectionClass($this->classname);
+		if (is_callable($field_name) === false AND $object->hasMethod($field_name) === false) {
+			$field_name = $this->expand_field_name($field_name);
+		}
 
 		if ($this->options['sort'] == $field_name) {
 			if ($this->options['direction'] == 'asc') {
