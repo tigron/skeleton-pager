@@ -89,7 +89,6 @@ class Pager {
 	 * @param string $sort
 	 */
 	public function set_sort($sort) {
-		$sort = $this->expand_field_name($sort);
 		$this->options['sort'] = $sort;
 	}
 
@@ -111,7 +110,10 @@ class Pager {
 	 * @param $database_field
 	 */
 	public function add_sort_permission($database_field) {
-		$database_field = $this->expand_field_name($database_field);
+		$object = new \ReflectionClass($this->classname);
+		if (is_callable($database_field) === false AND $object->hasMethod($database_field) === false) {
+			$database_field = $this->expand_field_name($database_field);
+		}
 		$this->options['sort_permissions'][] = $database_field;
 	}
 
@@ -306,6 +308,16 @@ class Pager {
 	 */
 	public function get_conditions() {
 		return $this->options['conditions'];
+	}
+
+	/**
+	 * Get classname
+	 *
+	 * @access public
+	 * @return string $classname
+	 */
+	public function get_classname() {
+		return $this->classname;
 	}
 
 	/**
@@ -613,7 +625,8 @@ class Pager {
 	 */
 	private function expand_field_name($field_name) {
 		if (strpos($field_name, '.') === false) {
-			return strtolower($this->classname) . '.' . $field_name;
+			$classname = $this->classname;
+			return $classname::trait_get_database_table() . '.' . $field_name;
 		} else {
 			return $field_name;
 		}
