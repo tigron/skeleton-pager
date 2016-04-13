@@ -196,12 +196,6 @@ trait Page {
 		$indexes = $db->get_table_indexes($table);
 
 		foreach ($definitions as $key => $definition) {
-			// Only keep the relevant definitions
-			if (substr($definition['field'], -3) == '_id') {
-				unset($definitions[$key]);
-				continue;
-			}
-
 			// Define a 'simple_type', only telling us what kind of data
 			// we are dealing with.
 			$definitions[$key]['simple_type'] = null;
@@ -260,7 +254,6 @@ trait Page {
 	 */
 	private static function trait_get_comparison($field, $value, $definition) {
 		$db = self::trait_get_database();
-
 		$where = '';
 
 		if ($definition['simple_type'] == 'text') {
@@ -430,6 +423,7 @@ trait Page {
 						if (!isset($definitions[$condition_table])) {
 							$definitions[$condition_table] = self::trait_get_table_definition($condition_table);
 						}
+
 						foreach ($definitions[$condition_table] as $definition) {
 							if ($definition['field'] == $condition_field) {
 								$where .= self::trait_get_comparison($field, $element, $definition);
