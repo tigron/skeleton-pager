@@ -72,6 +72,7 @@ trait Page {
 		 * 3) Remove all joins that are not in 1 and 2
 		 */
 		$table_joins = self::trait_get_joins();
+		$table_joins = array_merge($table_joins, $extra_joins);
 
 		$condition_joins = [];
 		foreach ($extra_conditions as $field => $condition) {
@@ -496,6 +497,7 @@ trait Page {
 		 * 3) Remove all joins that are not in 1 and 2
 		 */
 		$table_joins = self::trait_get_joins();
+		$table_joins = array_merge($table_joins, $extra_joins);
 
 		$condition_joins = [];
 		foreach ($extra_conditions as $field => $condition) {
