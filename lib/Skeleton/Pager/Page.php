@@ -9,6 +9,7 @@
 namespace Skeleton\Pager;
 
 use Skeleton\Database\Database;
+use Skeleton\Pager\Sql\Join;
 
 trait Page {
 	/**
@@ -98,12 +99,13 @@ trait Page {
 			if (isset($condition_joins['*'])) {
 				continue;
 			}
-			if (!isset($condition_joins[$table_join[0]])) {
+
+			if (!isset($condition_joins[ $table_join->get_remote_table()])) {
 				unset($table_joins[$key]);
 			}
 		}
 		foreach ($table_joins as $table_join) {
-			$sql .= 'LEFT OUTER JOIN `' . $table_join[0] . '` on `' . $table_join[0] . '`.' . $table_join[1] . ' = ' . $table_join[2] . "\n";
+			$sql .= $table_join;
 		}
 
 		/**
@@ -289,93 +291,10 @@ trait Page {
 				continue;
 			}
 
-			$extra_join_condition = false;
-			list($join_table, $field) = explode('.', $key);
-			foreach ($extra_joins as $extra_join) {
-				if ($extra_join[0] == $join_table) {
-					$extra_join_condition = true;
-				}
+			foreach ($condition_array as $condition) {
+				$where .= 'AND ' . $condition;
 			}
-
-			if ($extra_join_condition) {
-				continue;
-			}
-
-			foreach ($condition_array as $value) {
-
-				if ($value[0] == 'IN') {
-					if (is_array($value[1])) {
-						$list = implode($value[1], ', ');
-					} else {
-						$list = $value[1];
-					}
-
-					$where .= 'AND ' . $db->quote_identifier($key) . ' IN (' . $list . ')' . "\n\t";
-				} elseif (is_array($value[1])) {
-					$where .= 'AND (0';
-					foreach ($value[1] as $element) {
-						$where .= ' OR ' . $db->quote_identifier($key) . ' ' . $value[0] . ' ' . $db->quote($element);
-					}
-					$where .= ') ';
-				} elseif ($value[0] == 'BETWEEN') {
-					$where .= 'AND ' . $db->quote_identifier($key) . ' BETWEEN ' . $db->quote($value[1]) . ' AND ' . $db->quote($value[2]) . "\n\t";
-				} else {
-					$where .= 'AND ' . $db->quote_identifier($key) . ' ' . $value[0] . ' ' . $db->quote($value[1]) . ' ' . "\n\t";
-
-				}
-			}
-
 		}
-
-
-		foreach ($extra_conditions as $key => $condition_array) {
-			if ($key == '%search%' OR is_callable($key) AND !$object->hasMethod($key)) {
-				continue;
-			}
-
-			$extra_join_condition = false;
-			$join = null;
-			list($join_table, $field) = explode('.', $key);
-			foreach ($extra_joins as $extra_join) {
-				if ($extra_join[0] == $join_table) {
-					$extra_join_condition = true;
-					$join = $extra_join;
-				}
-			}
-
-			if (!$extra_join_condition) {
-				continue;
-			}
-
-			$where .= 'AND ' . $table . '.' . $field_id . ' IN ( SELECT ' . $join[1] . ' FROM ' . $join[0] . ' WHERE 1 ';
-
-			foreach ($condition_array as $value) {
-
-				if ($value[0] == 'IN') {
-					if (is_array($value[1])) {
-						$list = implode($value[1], ', ');
-					} else {
-						$list = $value[1];
-					}
-
-					$where .= 'AND ' . $db->quote_identifier($key) . ' IN (' . $list . ')' . "\n\t";
-				} elseif (is_array($value[1])) {
-					$where .= 'AND (0';
-					foreach ($value[1] as $element) {
-						$where .= ' OR ' . $db->quote_identifier($key) . ' ' . $value[0] . ' ' . $db->quote($element);
-					}
-					$where .= ') ';
-				} elseif ($value[0] == 'BETWEEN') {
-					$where .= 'AND ' . $db->quote_identifier($key) . ' BETWEEN ' . $db->quote($value[1]) . ' AND ' . $db->quote($value[2]) . "\n\t";
-				} else {
-					$where .= 'AND ' . $db->quote_identifier($key) . ' ' . $value[0] . ' ' . $db->quote($value[1]) . ' ' . "\n\t";
-				}
-			}
-
-			$where .= ') ';
-
-		}
-
 
 
 		if (isset(self::$object_text_fields) AND count(self::$object_text_fields) > 0) {
@@ -521,12 +440,12 @@ trait Page {
 			if (isset($condition_joins['*'])) {
 				continue;
 			}
-			if (!isset($condition_joins[$table_join[0]])) {
+			if (!isset($condition_joins[$table_join->get_remote_table()])) {
 				unset($table_joins[$key]);
 			}
 		}
 		foreach ($table_joins as $table_join) {
-			$sql .= 'LEFT OUTER JOIN `' . $table_join[0] . '` on `' . $table_join[0] . '`.' . $table_join[1] . ' = ' . $table_join[2] . "\n";
+			$sql .= $table_join;
 		}
 
 		$sql .= 'WHERE 1 ' . $where;
@@ -550,7 +469,7 @@ trait Page {
 			$remote_table = substr($field, 0, -3);
 
 			if (in_array($remote_table, $tables)) {
-				$joins[] = [ $remote_table, 'id', $table . '.' . $field ];
+				$joins[] = new Join($remote_table, 'id', $table . '.' . $field);
 			}
 		}
 		return $joins;

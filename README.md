@@ -26,4 +26,11 @@ Installation via composer:
 	if (isset($_POST['search'])) {
 		$pager->set_search($_POST['search'], [ 'field2', 'remote_table.field4');
 	}
+
+	$pager->add_condition('field1', '=', 1);
+	$pager->add_condition('field2', 'IN', [ 1, 2, 3]);
+
+	$condition = new \Skeleton\Pager\Sql\Condition('my_other_field', '>', '0);
+	$pager->add_join('remote_table', remote_id', 'local_field', $condition);
+
 	$pager->page();

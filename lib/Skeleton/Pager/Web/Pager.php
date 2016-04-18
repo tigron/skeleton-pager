@@ -10,6 +10,8 @@
 namespace Skeleton\Pager\Web;
 
 use \Skeleton\Pager\Config;
+use \Skeleton\Pager\Sql\Condition;
+use \Skeleton\Pager\Sql\Join;
 
 class Pager {
 	/**
@@ -143,14 +145,20 @@ class Pager {
 		$params = func_get_args();
 		$conditions = $this->options['conditions'];
 
+		if (is_a($params, '\Skeleton\Pager\Sql\Condition')) {
+			$condition[$field][] = $params;
+			return;
+		}
+
 		$field = array_shift($params);
 		$field = $this->expand_field_name($field);
 
 		if (count($params) == 1) {
-			$conditions[$field][] = ['=', array_shift($params)];
+			$condition = new Condition($field, '=', array_shift($params));
 		} else {
-			$conditions[$field][] = $params;
+			$condition = new Condition($field, array_shift($params), $params);
 		}
+		$conditions[$field][] = $condition;
 
 		$this->options['conditions'] = $conditions;
 	}
@@ -212,8 +220,9 @@ class Pager {
 	 * @param string $remote_table
 	 * @param string $remote_id
 	 * @param string $local_field
+	 * @param array $extra_join_conditions
 	 */
-	public function add_join($remote_table, $remote_id, $local_field) {
+	public function add_join($remote_table, $remote_id, $local_field, $extra_conditions = []) {
 		$local_field = $this->expand_field_name($local_field);
 		/*
 			$extra_join = [
@@ -223,7 +232,17 @@ class Pager {
 			]
 		*/
 
-		$this->options['joins'][] = [ $remote_table, $remote_id, $local_field ];
+		$join = new Join($remote_table, $remote_id, $local_field);
+
+		if (is_a($extra_conditions, '\Skeleton\Pager\Sql\Condition')) {
+			$join->add_condition($extra_conditions);
+		} else {
+			foreach ($extra_conditions as $extra_condition) {
+				$join->add_condition($extra_condition);
+			}
+		}
+
+		$this->options['joins'][] = $join;
 	}
 
 	/**
