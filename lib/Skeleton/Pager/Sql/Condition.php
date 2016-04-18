@@ -51,13 +51,43 @@ class Condition {
 	}
 
 	/**
+	 * Get local_field
+	 *
+	 * @access public
+	 * @return string $local_field
+	 */
+	public function get_local_field() {
+		return $this->local_field;
+	}
+
+	/**
+	 * Get value
+	 *
+	 * @access public
+	 * @return string $value
+	 */
+	public function get_value() {
+		return $this->value;
+	}
+
+	/**
+	 * Get comparison
+	 *
+	 * @access public
+	 * @return string $comparison
+	 */
+	public function get_comparison() {
+		return $this->comparison;
+	}
+
+
+	/**
 	 * tostring
 	 *
 	 * @access public
 	 * @return string $condition
 	 */
 	public function __toString() {
-		try {
 		$db = Database::get();
 		if ($this->comparison == 'IN') {
 			if (is_array($this->value)) {
@@ -79,10 +109,38 @@ class Condition {
 		} else {
 			return $db->quote_identifier($this->local_field) . ' ' . $this->comparison . ' ' . $db->quote($this->value) . ' ' . "\n\t";
 		}
-		} catch (\Exception $e) {
-			print_r($e);
-			die();
+	}
+
+	/**
+	 * Equals
+	 *
+	 * @access public
+	 * @param \Skeleton\Pager\Sql\Condition $condition
+	 * @return boolean $equals
+	 */
+	public function equals(\Skeleton\Pager\Sql\Condition $condition) {
+		if ($this->get_local_field() != $condition->get_local_field()) {
+			return false;
 		}
+
+		if ($this->get_comparison() != $condition->get_comparison()) {
+			return false;
+		}
+
+		if (!is_array($this->get_value()) and !is_array($condition->get_value())) {
+			if ($this->get_value() != $condition->get_value()) {
+				return false;
+			}
+		} elseif (is_array($this->get_value()) and is_array($condition->get_value())) {
+			$diff = array_diff($this->get_value(), $condition->get_value());
+			if (count($diff) > 0) {
+				return false;
+			}
+		} else {
+			return false;
+		}
+
+		return true;
 	}
 
 

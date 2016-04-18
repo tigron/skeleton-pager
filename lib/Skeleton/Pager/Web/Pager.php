@@ -173,16 +173,22 @@ class Pager {
 	 */
 	public function has_condition() {
 		$params = func_get_args();
-		$condition = [];
 
-		$field = array_shift($params);
-		$field = $this->expand_field_name($field);
-
-		if (count($params) == 1) {
-			$condition[$field] = ['=', array_shift($params)];
+		if (is_a($params, '\Skeleton\Pager\Sql\Condition')) {
+			$condition = $params;
 		} else {
-			$condition[$field] = $params;
+			$field = array_shift($params);
+			$field = $this->expand_field_name($field);
+
+			if (count($params) == 1) {
+				$condition = new Condition($field, '=', array_shift($params));
+			} else {
+				$condition = new Condition($field, array_shift($params), $params);
+			}
 		}
+
+
+
 
 		foreach ($this->options['conditions'] as $cond_field => $stored_conditions) {
 			if ($field != $cond_field) {
@@ -190,24 +196,10 @@ class Pager {
 			}
 
 			foreach ($stored_conditions as $stored_condition) {
-				$stored_condition = [ $field => $stored_condition ];
-
-				if (!is_array($stored_condition[$field][1]) AND $stored_condition == $condition) {
+				if ($condition->equals($stored_condition)) {
 					return true;
 				}
 
-				if (is_array($stored_condition[$field][1])) {
-					$value = $condition[$field][1];
-
-					if (in_array($value, $stored_condition[$field][1])) {
-						return true;
-					}
-				}
-
-
-				if ( [ $field => $stored_condition ] == $condition ) {
-					return true;
-				}
 			}
 		}
 		return false;
