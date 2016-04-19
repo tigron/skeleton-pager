@@ -328,10 +328,10 @@ trait Page {
 					}
 
 					foreach ($extra_joins as $extra_join) {
-						$definitions = self::trait_get_table_definition($extra_join[0]);
+						$definitions = self::trait_get_table_definition($extra_join->get_remote_table());
 
 						foreach ($definitions as $definition) {
-							$where .= self::trait_get_comparison($extra_join[0] . '.' . $definition['field'], $element, $definition);
+							$where .= self::trait_get_comparison($extra_join->get_remote_table() . '.' . $definition['field'], $element, $definition);
 						}
 					}
 				} else {
