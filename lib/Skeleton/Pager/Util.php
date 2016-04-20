@@ -58,4 +58,21 @@ class Util {
 		});
 		return $objects;
 	}
+
+	/**
+	 * Get attribute
+	 *
+	 * @access public
+	 * @param mixed $object
+	 * @param string $property
+	 * @return mixed $value
+	 */
+	public static function object_get_attribute($object, $property) {
+		if (strpos($property, '.') !== false) {
+			list($first, $property) = explode('.', $property);
+			return Util::object_get_attribute($object->$first, $property);
+		} else {
+			return $object->$property;
+		}
+	}
 }

@@ -78,7 +78,7 @@ class Pager {
 	 */
 	public function __construct($classname = null) {
 		if ($classname === null) {
-			throw new Exception('You must provide a classname');
+			throw new \Exception('You must provide a classname');
 		}
 
 		$this->classname = $classname;
@@ -440,6 +440,42 @@ class Pager {
 	}
 
 	/**
+	 * Export the result to CSV
+	 *
+	 * @access public
+	 * @param array $fields
+	 */
+	public function export($fields) {
+		header('Content-Type: text/csv; charset=utf-8');
+		header('Content-Disposition: attachment; filename=' . $this->classname . '.csv');
+
+		if ($fields === array_values($fields)) {
+			$new_fields = [];
+			foreach ($fields as $field) {
+				$new_fields[$field] = $field;
+			}
+			$fields = $new_fields;
+		}
+
+		foreach ($fields as $field) {
+			$this->add_sort_permission($field);
+		}
+
+		$result = $this->page(true);
+		foreach ($fields as $field) {
+			echo $field . ';';
+		}
+		echo "\n";
+		foreach ($this->items as $item) {
+			foreach ($fields as $field) {
+				echo \Skeleton\Pager\Util::object_get_attribute($item, $field) . ';';
+			}
+			echo "\n";
+		}
+		exit;
+	}
+
+	/**
 	 * Get the pager options from a hash
 	 *
 	 * @access private
@@ -459,16 +495,34 @@ class Pager {
 	 * @param int $sort
 	 * @param string $direction
 	 */
-	private function create_options_hash($conditions, $page, $sort, $direction, $joins) {
-		$options = [
+	public function create_options_hash($conditions = null, $page = null, $sort = null, $direction = null) {
+		if ($conditions === null) {
+			$conditions = $this->options['conditions'];
+		}
+
+		if ($page === null) {
+			$page = $this->options['page'];
+		}
+
+		if ($sort === null) {
+			$sort = $this->options['sort'];
+		}
+
+		if ($direction === null) {
+			$direction = $this->options['direction'];
+		}
+
+		$options = array(
+			'classname' => $this->classname,
 			'conditions' => $conditions,
 			'page' => $page,
 			'sort' => $sort,
 			'direction' => $direction,
-			'joins' => $joins,
-		];
+			'joins' => $this->options['joins'],
+		);
 
-		return urlencode(base64_encode(serialize($options)));
+		$hash = base64_encode( serialize($options) );
+		return $hash;
 	}
 
 	/**
@@ -579,7 +633,7 @@ class Pager {
 				$active = false;
 			}
 
-			if ($text == '&raquo;' AND $this->options['jump_to']) {
+			if ($text == '&raquo;' AND isset($this->options['jump_to']) and $this->options['jump_to']) {
 				$str_links .= '<li><span class="jump-to-page"><input type="text" size="4" placeholder="#" id="jump-to-page-' . str_replace('_', '-', strtolower($this->classname)) . '"></span></li>';
 			}
 
@@ -666,5 +720,19 @@ class Pager {
 		$pager_uri_key = base64_encode(str_replace('/index', '', $request_uri) . '?' . implode('&', $qry_str_parts));
 
 		return $pager_uri_key;
+	}
+
+	/**
+	 * Get from options_hash
+	 *
+	 * @access public
+	 * @param string $options_hash
+	 * @return Web_Pager $pager
+	 */
+	public static function get_by_options_hash($options_hash) {
+		$options = unserialize( base64_decode($options_hash) );
+		$pager = new self($options['classname']);
+		$pager->options = $options;
+		return $pager;
 	}
 }
