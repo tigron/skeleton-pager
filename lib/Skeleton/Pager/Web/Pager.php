@@ -654,7 +654,7 @@ class Pager {
 			$url = self::find_page_uri() . '?' . http_build_query($qry_str_parts);
 			$str_links .= $this->create_page_link($text, $url, $active);
 			if ($key+1 == count($links) AND $text != '&raquo;' AND $this->options['jump_to']) {
-				$str_links .= '<li><span class="jump-to-page"><input type="text" size="4" placeholder="#" id="jump-to-page-' . str_replace('_', '-', strtolower($this->classname)) . '"></span></li>';
+				$str_links .= '<li><span class="jump-to-page" style="padding: 4px"><input type="text" size="4" style="border: solid 1px #eee; text-align: center;"  placeholder="#" id="jump-to-page-' . str_replace('_', '-', strtolower($this->classname)) . '"></span></li>';
 			}
 		}
 
