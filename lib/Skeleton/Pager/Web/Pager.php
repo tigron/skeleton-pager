@@ -634,7 +634,7 @@ class Pager {
 			}
 
 			if ($text == '&raquo;' AND isset($this->options['jump_to']) and $this->options['jump_to']) {
-				$str_links .= '<li><span class="jump-to-page"><input type="text" size="4" placeholder="#" id="jump-to-page-' . str_replace('_', '-', strtolower($this->classname)) . '"></span></li>';
+				$str_links .= '<li><span class="jump-to-page" style="padding: 4px"><input type="text" size="4" style="border: solid 1px #eee; text-align: center;" placeholder="#" id="jump-to-page-' . str_replace('_', '-', strtolower($this->classname)) . '"></span></li>';
 			}
 
 			$hash = $this->create_options_hash($this->options['conditions'], $number, $this->options['sort'], $this->options['direction'], $this->options['joins']);
