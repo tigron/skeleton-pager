@@ -62,7 +62,7 @@ trait Page {
 			$direction = 'desc';
 		}
 
-		$sql = 'SELECT ' . $table . '.' . self::trait_get_table_field_id() . ' as id ' . "\n";
+		$sql = 'SELECT DISTINCT ' . $table . '.' . self::trait_get_table_field_id() . ' as id ' . "\n";
 		$sql .= 'FROM `' . $table . '`' . "\n";
 
 		/**
@@ -392,14 +392,14 @@ trait Page {
 
 		switch ($type) {
 			case 'count':
-				$sql = 'SELECT COUNT(' . $table . '.' . self::trait_get_table_field_id() . ') ';
+				$sql = 'SELECT COUNT(DISTINCT ' . $table . '.' . self::trait_get_table_field_id() . ') ';
 				break;
 			case 'sum':
 				if (!isset($extra_parameters['field'])) {
 					throw new Exception('Aggregate sum needs a field');
 				}
 
-				$sql = 'SELECT SUM(' . $extra_parameters['field'] . ') ';
+				$sql = 'SELECT SUM(DISTINCT ' . $extra_parameters['field'] . ') ';
 				$join_mandatory = true;
 				break;
 			default:
