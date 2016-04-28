@@ -97,7 +97,7 @@ class Condition {
 			}
 
 			return $db->quote_identifier($this->local_field) . ' IN (' . $list . ')' . "\n\t";
-		} elseif (is_array($this->value[0])) {
+		} elseif (is_array($this->value)) {
 			$where = '(0';
 			foreach ($this->value as $field) {
 				$where .= ' OR ' . $db->quote_identifier($this->local_field) . ' ' . $this->comparison . ' ' . $db->quote($field);

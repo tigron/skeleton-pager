@@ -296,7 +296,6 @@ trait Page {
 			}
 		}
 
-
 		if (isset(self::$object_text_fields) AND count(self::$object_text_fields) > 0) {
 			// Object Text fields: language_id
 			if (isset($extra_conditions['language_id'])) {
