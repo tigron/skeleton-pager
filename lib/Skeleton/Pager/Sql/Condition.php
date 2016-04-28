@@ -90,14 +90,14 @@ class Condition {
 	public function __toString() {
 		$db = Database::get();
 		if ($this->comparison == 'IN') {
-			if (is_array($this->value)) {
-				$list = implode($this->value, ', ');
+			if (is_array($this->value[0])) {
+				$list = implode($this->value[0], ', ');
 			} else {
 				$list = $this->value;
 			}
 
 			return $db->quote_identifier($this->local_field) . ' IN (' . $list . ')' . "\n\t";
-		} elseif (is_array($this->value)) {
+		} elseif (is_array($this->value[0])) {
 			$where = '(0';
 			foreach ($this->value as $field) {
 				$where .= ' OR ' . $db->quote_identifier($this->local_field) . ' ' . $this->comparison . ' ' . $db->quote($field);
@@ -121,6 +121,22 @@ class Condition {
 	public function equals(\Skeleton\Pager\Sql\Condition $condition) {
 		if ($this->get_local_field() != $condition->get_local_field()) {
 			return false;
+		}
+
+		if ($this->get_comparison() == '=' AND $condition->get_comparison() == 'IN') {
+			foreach ($condition->get_value()[0] as $value) {
+				if ($this->get_value() == $value) {
+					return true;
+				}
+			}
+		}
+
+		if ($condition->get_comparison() == '=' AND $this->get_comparison() == 'IN') {
+			foreach ($this->get_value()[0] as $value) {
+				if ($condition->get_value() == $value) {
+					return true;
+				}
+			}
 		}
 
 		if ($this->get_comparison() != $condition->get_comparison()) {
