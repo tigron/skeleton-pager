@@ -521,7 +521,7 @@ class Pager {
 			'joins' => $this->options['joins'],
 		);
 
-		$hash = base64_encode( serialize($options) );
+		$hash = urlencode(base64_encode(serialize($options)));
 		return $hash;
 	}
 
@@ -730,7 +730,7 @@ class Pager {
 	 * @return Web_Pager $pager
 	 */
 	public static function get_by_options_hash($options_hash) {
-		$options = unserialize( base64_decode($options_hash) );
+		$options = unserialize(base64_decode(urldecode($options_hash)));
 		$pager = new self($options['classname']);
 		$pager->options = $options;
 		return $pager;
