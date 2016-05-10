@@ -307,13 +307,6 @@ class Pager {
 	 */
 	public function clear_condition($key) {
 		unset($this->options['conditions'][$key]);
-
-		if (Config::$sticky_pager) {
-			$hash = $this->create_options_hash($this->options['conditions'], $this->options['page'], $this->options['sort'], $this->options['direction'], $this->options['joins']);
-
-			$pager_uri_key = self::get_pager_uri_key();
-			$_SESSION['pager'][$pager_uri_key] = $hash;
-		}
 	}
 
 	/**
