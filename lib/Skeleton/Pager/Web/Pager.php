@@ -294,7 +294,7 @@ class Pager {
 		$this->options['conditions'] = [];
 
 		if (Config::$sticky_pager) {
-			$pager_uri_key = self::get_pager_uri_key();
+			$pager_uri_key = $this->get_pager_uri_key();
 			unset($_SESSION['pager'][$pager_uri_key]);
 		}
 	}
@@ -383,7 +383,7 @@ class Pager {
 	 * @access private
 	 */
 	public function page($all = false) {
-		$pager_uri_key = self::get_pager_uri_key();
+		$pager_uri_key = $this->get_pager_uri_key();
 
 		if ($_SERVER['REQUEST_METHOD'] != 'POST') {
 			if (!isset($_GET['q']) AND isset($_SESSION['pager'][$pager_uri_key]) AND Config::$sticky_pager) {
@@ -704,14 +704,15 @@ class Pager {
 	 * @access private
 	 * @return string $pager_uri_key
 	 */
-	private static function get_pager_uri_key() {
+	private function get_pager_uri_key() {
 		$request_uri = str_replace('?' . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']);
 		$qry_str = $_SERVER['QUERY_STRING'];
+
 
 		parse_str($qry_str, $qry_str_parts);
 		unset($qry_str_parts['p']);
 		unset($qry_str_parts['q']);
-		$pager_uri_key = base64_encode(str_replace('/index', '', $request_uri) . '?' . implode('&', $qry_str_parts));
+		$pager_uri_key = base64_encode(strtolower($this->classname) . '/' . str_replace('/index', '', $request_uri) . '?' . implode('&', $qry_str_parts));
 
 		return $pager_uri_key;
 	}
