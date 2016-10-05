@@ -690,12 +690,17 @@ class Pager {
 	 * @return string $expanded_field_name
 	 */
 	private function expand_field_name($field_name) {
-		if (strpos($field_name, '.') === false) {
-			$classname = $this->classname;
-			return $classname::trait_get_database_table() . '.' . $field_name;
-		} else {
+		if (strpos($field_name, '.') !== false) {
 			return $field_name;
 		}
+
+		$classname = $this->classname;
+		$object = new \ReflectionClass($classname);
+		if (is_callable($field_name) === true OR $object->hasMethod($field_name) === true) {
+			return $field_name;
+		}
+
+		return $classname::trait_get_database_table() . '.' . $field_name;
 	}
 
 	/**

@@ -287,7 +287,7 @@ trait Page {
 		$object = new \ReflectionClass(get_class());
 
 		foreach ($extra_conditions as $key => $condition_array) {
-			if ($key == '%search%' OR is_callable($key) AND !$object->hasMethod($key)) {
+			if ($key == '%search%' OR is_callable($key) OR $object->hasMethod($key)) {
 				continue;
 			}
 
