@@ -1,0 +1,14 @@
+{% if field_name in options.sort_permissions %}
+	<a href="{{ url }}">
+		{% if pager.get_sort() == field_name %}
+			{% if pager.get_direction() == 'asc' %}
+				<span class="glyphicon glyphicon-chevron-up"></span>
+			{% else %}
+				<span class="glyphicon glyphicon-chevron-down"></span>
+			{% endif %}
+		{% endif %}
+		{{ header }}
+	</a>
+{% else %}
+	{{ header }}
+{% endif %}
