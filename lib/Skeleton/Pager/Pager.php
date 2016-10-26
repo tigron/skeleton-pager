@@ -233,6 +233,16 @@ class Pager {
 	}
 
 	/**
+	 * Get jump to
+	 *
+	 * @access public
+	 * @return bool $jump_to
+	 */
+	public function get_jump_to() {
+		return $this->options['jump_to'];
+	}
+
+	/**
 	 * Set a search
 	 *
 	 * @access public

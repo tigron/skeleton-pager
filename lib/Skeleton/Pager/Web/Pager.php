@@ -144,9 +144,6 @@ class Pager extends \Skeleton\Pager\Pager {
 
 			if ($print === true) {
 				if (end($links)['page'] > 0 AND end($links)['page']+1 != $i) {
-					$links[] = [
-						'page' => '...'
-					];
 				}
 
 				$links[] = [
@@ -185,8 +182,6 @@ class Pager extends \Skeleton\Pager\Pager {
 				$number = $link['page'];
 				$link['active'] = true;
 				$links[$key] = $link;
-			} elseif ($link == '...') {
-				continue;
 			} else {
 				$number = $link['page'];
 			}
