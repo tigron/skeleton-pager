@@ -203,7 +203,7 @@ class Pager extends \Skeleton\Pager\Pager {
 		$template->assign('links', $links);
 		$template->assign('classname', $this->classname);
 		$template->assign('options', $this->options);
-		$output = $template->render('@skeleton-pager\links.twig');
+		$output = $template->render(\Skeleton\Pager\Config::$links_template);
 		$this->links = $output;
 	}
 

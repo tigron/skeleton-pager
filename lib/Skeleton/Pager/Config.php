@@ -22,11 +22,21 @@ class Config {
 	/**
 	 * Sticky pager
 	 *
-	 * Remeber pager when navigating away and back to the module
+	 * Remember pager when navigating away and back to the module
 	 *
 	 * @access public
 	 * @var bool $sticky_pager
 	 */
 	public static $sticky_pager = false;
+
+	/**
+	 * Links template
+	 *
+	 * Set the template to render the page links
+	 *
+	 * @access public
+	 * @var string $links_template
+	 */
+	public static $links_template = '@skeleton-pager\links.twig';
 
 }

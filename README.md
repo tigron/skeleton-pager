@@ -34,3 +34,24 @@ Installation via composer:
 	$pager->add_join('remote_table', remote_id', 'local_field', $condition);
 
 	$pager->page();
+
+## Configuration
+
+	/**
+	 * Items per page
+	 */
+	\Skeleton\Pager\Config::$items_per_page = 20;
+
+	/**
+	 * Sticky pager
+	 *
+	 * Remember pager when navigating away and back to the module
+	 */
+	\Skeleton\Pager\Config::$sticky_pager = false;
+
+	/**
+	 * Links template
+	 *
+	 * Set the template to render the page links
+	 */
+	\Skeleton\Pager\Config::$links_template = '@skeleton-pager\links.twig';
