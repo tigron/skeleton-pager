@@ -291,15 +291,13 @@ trait Page {
 				continue;
 			}
 
+			// Ignore the language setting for object text.
+			if ($key == 'object_text.language_id') {
+				continue;
+			}
+
 			foreach ($condition_array as $condition) {
 				$where .= 'AND ' . $condition;
-			}
-		}
-
-		if (isset(self::$object_text_fields) AND count(self::$object_text_fields) > 0) {
-			// Object Text fields: language_id
-			if (isset($extra_conditions['language_id'])) {
-				$where .= 'AND object_text.language_id = ' . $db->quote($extra_conditions['language_id'][1]) . ' ' . "\n\t";
 			}
 		}
 
@@ -353,9 +351,15 @@ trait Page {
 				}
 
 				if (isset(self::$object_text_fields) AND count(self::$object_text_fields) > 0) {
-					$where .= 'OR ' . $table . '.' . $field_id . ' IN (
-						SELECT object_id FROM object_text WHERE object_id=' . $table . '.' . $field_id . ' AND object_text.classname LIKE "' . get_class() . '" AND content LIKE "%' . $db->quote($element, false) . '%"
-					)';
+					$where .= 'OR ' . $table . '.' . $field_id . ' IN ( ';
+					$where .= ' SELECT object_id FROM object_text ';
+					$where .= ' WHERE object_id=' . $table . '.' . $field_id;
+					$where .= ' AND object_text.classname LIKE "' . get_class() . '"';
+					if (isset($extra_conditions['object_text.language_id'])) {
+						$where .= ' AND object_text.language_id=' . $extra_conditions['object_text.language_id'][0]->get_value();
+					}
+					$where .= ' AND content LIKE "%' . $db->quote($element, false) . '%"';
+					$where .= ')';
 				}
 
 				$where .= ') ';
