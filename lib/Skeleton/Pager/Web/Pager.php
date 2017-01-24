@@ -59,7 +59,7 @@ class Pager extends \Skeleton\Pager\Pager {
 		$template->assign('options', $this->options);
 		$template->assign('field_name', $field_name);
 		$template->assign('header', $header);
-		return $template->render('@skeleton-pager\header.twig');
+		return $template->render('@skeleton-pager\header.twig', false);
 	}
 
 	/**
@@ -203,7 +203,7 @@ class Pager extends \Skeleton\Pager\Pager {
 		$template->assign('links', $links);
 		$template->assign('classname', $this->classname);
 		$template->assign('options', $this->options);
-		$output = $template->render(\Skeleton\Pager\Config::$links_template);
+		$output = $template->render(\Skeleton\Pager\Config::$links_template, false);
 		$this->links = $output;
 	}
 
