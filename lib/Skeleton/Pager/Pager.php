@@ -84,6 +84,16 @@ class Pager {
 	}
 
 	/**
+	 * Get sort
+	 *
+	 * @access public
+	 * @return string $sort
+	 */
+	public function get_sort() {
+		return $this->options['sort'];
+	}
+
+	/**
 	 * Set direction
 	 *
 	 * @access public
@@ -91,6 +101,16 @@ class Pager {
 	 */
 	public function set_direction($direction = 'asc') {
 		$this->options['direction'] = $direction;
+	}
+
+	/**
+	 * Get direction
+	 *
+	 * @access public
+	 * @return string $direction
+	 */
+	public function get_direction() {
+		return $this->options['direction'];
 	}
 
 	/**
