@@ -222,6 +222,21 @@ class Pager extends \Skeleton\Pager\Pager {
 	}
 
 	/**
+	 * Clear sticky pager data
+	 *
+	 * @access public
+	 */
+	public static function clear_sticky() {
+		if (Config::$sticky_pager === false) {
+			return;
+		}
+
+		if (isset($_SESSION['pager'])) {
+			unset($_SESSION['pager']);
+		}
+	}
+
+	/**
 	 * Get key for storing the options hash in session
 	 *
 	 * @access private
