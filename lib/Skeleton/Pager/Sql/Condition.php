@@ -168,6 +168,7 @@ class Condition {
 	 */
 	public function evaluate($value) {
 		switch ($this->comparison) {
+			case '':
 			case '=':
 				return $this->value == $value;
 			case '!=':
@@ -182,7 +183,7 @@ class Condition {
 			case '>=':
 				return $this->value >= $value;
 			default:
-				throw new Exception('Unsupported comparison operator');
+				throw new \Exception("Unsupported comparison operator: '" . $this->comparison . "'");
 		}
 	}
 }
