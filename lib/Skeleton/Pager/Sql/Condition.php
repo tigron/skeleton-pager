@@ -159,5 +159,30 @@ class Condition {
 		return true;
 	}
 
-
+	/**
+	 * evaluate the condition against the given value
+	 *
+	 * @access public
+	 * @param $value
+	 * @return bool
+	 */
+	public function evaluate($value) {
+		switch ($this->comparison) {
+			case '=':
+				return $this->value == $value;
+			case '!=':
+			case '<>':
+				return $this->value != $value;
+			case '<':
+				return $this->value < $value;
+			case '>':
+				return $this->value > $value;
+			case '<=':
+				return $this->value <= $value;
+			case '>=':
+				return $this->value >= $value;
+			default:
+				throw new Exception('Unsupported comparison operator');
+		}
+	}
 }

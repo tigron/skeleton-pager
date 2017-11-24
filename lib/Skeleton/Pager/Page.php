@@ -12,6 +12,9 @@ use Skeleton\Database\Database;
 use Skeleton\Pager\Sql\Join;
 
 trait Page {
+
+	private static $objects_cache = [ 'extra_conditions' => null, 'extra_joins' => null, 'objects' => null ];
+
 	/**
 	 * Get paged
 	 *
@@ -46,6 +49,18 @@ trait Page {
 			$sorter = 'object';
 		} else {
 			$sorter = 'db';
+		}
+		if ($sorter == 'db') {
+			foreach ($extra_conditions as $key => $extra_condition) {
+				if ($key == '%search%') {
+					continue;
+				} elseif (strpos($key, '.') === false) {
+					if (is_callable($key) or $object->hasMethod($key)) {
+						$sorter = 'object';
+						break;
+					}
+				}
+			}
 		}
 
 		if (!$all) {
@@ -133,14 +148,15 @@ trait Page {
 			$objects[] = self::get_by_id($id);
 		}
 
-		foreach ($extra_conditions as $key => $value) {
+		foreach ($extra_conditions as $key => $cond) {
 			foreach ($objects as $o_key => $object) {
 				if (!method_exists($object, $key) or !is_callable([$object, $key])) {
 					continue;
 				}
 
 				try {
-					if (call_user_func_array([$object, $key], $value)) {
+					$result = call_user_func_array([$object, $key], $cond);
+					if (current($cond)->evaluate($result)) {
 						continue;
 					}
 				} catch (Exception $e) {
@@ -153,6 +169,9 @@ trait Page {
 
 		if ($sorter == 'object') {
 			$objects = Util::object_sort($objects, $sort, $direction);
+			self::$objects_cache['extra_conditions'] = $extra_conditions;
+			self::$objects_cache['extra_joins'] = $extra_joins;
+			self::$objects_cache['objects'] = $objects;
 			$objects = array_slice($objects, ($page-1)*$limit, $limit);
 		}
 
@@ -386,6 +405,7 @@ trait Page {
 	 * @return int $count
 	 */
 	private static function trait_get_aggregate($type, $extra_conditions = [], $extra_joins = [], $extra_parameters = []) {
+
 		$db = self::trait_get_database();
 		$table = self::trait_get_database_table();
 		$where = self::trait_get_search_where($extra_conditions, $extra_joins);
@@ -393,16 +413,52 @@ trait Page {
 
 		$join_mandatory = false;
 
+		// testing if db or object mode
+		$sorter = 'db';
+		$object = new \ReflectionClass(get_class());
+		foreach ($extra_conditions as $key => $extra_condition) {
+			foreach ($extra_conditions as $key => $extra_condition) {
+				if ($key == '%search%') {
+					continue;
+				} elseif (strpos($key, '.') === false) {
+					if (is_callable($key) or $object->hasMethod($key)) {
+						$sorter = 'object';
+						break;
+					}
+				}
+			}
+		}
+		if ($sorter == 'object') {
+			// if mode is object and objects are not cached or extra_conditions|extra_joins are not equal to what is cached
+			// then we request the get_paged() again to get the good objects
+			if (isset(self::$objects_cache['objects']) == false or self::$objects_cache['objects'] == null or
+				count(Util::array_diff_assoc_recursive($extra_conditions, self::$objects_cache['extra_conditions'])) > 0 or
+				count(Util::array_diff_assoc_recursive($extra_joins, self::$objects_cache['extra_joins'])) > 0) {
+				self::get_paged(null, 'asc', 1, $extra_conditions, true, $extra_joins);
+			}
+		}
+
 		switch ($type) {
 			case 'count':
-				$sql = 'SELECT COUNT(DISTINCT ' . $table . '.' . self::trait_get_table_field_id() . ') ';
+				if ($sorter == 'object') {
+					return count(self::$objects_cache['objects']);
+				}
+				$sql = '(SELECT COUNT(DISTINCT ' . $table . '.' . self::trait_get_table_field_id() . ') ';
 				break;
 			case 'sum':
 				if (!isset($extra_parameters['field'])) {
 					throw new Exception('Aggregate sum needs a field');
 				}
 
-				$sql = 'SELECT SUM(DISTINCT ' . $extra_parameters['field'] . ') ';
+				if ($sorter == 'object') {
+					$sum = 0;
+					$sum_field = $extra_parameters['field'];
+					foreach (self::$objects_cache['objects'] as $object) {
+						$sum += $object->$sum_field;
+					}
+					return $sum;
+				}
+				$sql = 'SELECT SUM(' . $extra_parameters['field'] . ') FROM `' . $table . '` WHERE id IN ( SELECT ' . $table . '.id ';
 				$join_mandatory = true;
 				break;
 			default:
@@ -451,7 +507,7 @@ trait Page {
 			$sql .= $table_join;
 		}
 
-		$sql .= 'WHERE 1 ' . $where;
+		$sql .= 'WHERE 1 ' . $where . ')';
 		$count = $db->get_one($sql);
 
 		return $count;
