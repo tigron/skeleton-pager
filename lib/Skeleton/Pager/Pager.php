@@ -296,6 +296,7 @@ class Pager {
 	 * @param string $field
 	 */
 	public function get_sum($field) {
+		$field = $this->expand_field_name($field);
 		return call_user_func_array([$this->classname, 'sum'], [$field, $this->options['conditions'], $this->options['joins']]);
 	}
 
