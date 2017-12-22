@@ -170,18 +170,48 @@ class Condition {
 		switch ($this->comparison) {
 			case '':
 			case '=':
-				return $this->value == $value;
+				foreach ($this->value as $value_item) {
+					if ($value_item == $value) {
+						return true;
+					}
+				}
+				return false;
 			case '!=':
 			case '<>':
-				return $this->value != $value;
+				foreach ($this->value as $value_item) {
+					if ($value_item != $value) {
+						return true;
+					}
+				}
+				return false;
 			case '<':
-				return $this->value < $value;
+				foreach ($this->value as $value_item) {
+					if ($value_item < $value) {
+						return true;
+					}
+				}
+				return false;
 			case '>':
-				return $this->value > $value;
+				foreach ($this->value as $value_item) {
+					if ($value_item > $value) {
+						return true;
+					}
+				}
+				return false;
 			case '<=':
-				return $this->value <= $value;
+				foreach ($this->value as $value_item) {
+					if ($value_item <= $value) {
+						return true;
+					}
+				}
+				return false;
 			case '>=':
-				return $this->value >= $value;
+				foreach ($this->value as $value_item) {
+					if ($value_item >= $value) {
+						return true;
+					}
+				}
+				return false;
 			default:
 				throw new \Exception("Unsupported comparison operator: '" . $this->comparison . "'");
 		}

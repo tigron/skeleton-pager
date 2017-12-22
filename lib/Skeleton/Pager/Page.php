@@ -148,22 +148,25 @@ trait Page {
 			$objects[] = self::get_by_id($id);
 		}
 
-		foreach ($extra_conditions as $key => $cond) {
-			foreach ($objects as $o_key => $object) {
-				if (!method_exists($object, $key) or !is_callable([$object, $key])) {
-					continue;
-				}
-
-				try {
-					$result = call_user_func_array([$object, $key], $cond);
-					if (current($cond)->evaluate($result)) {
+		foreach ($extra_conditions as $fieldname => $conditions) {
+			foreach ($conditions as $condition) {
+				foreach ($objects as $key => $object) {
+					if (!method_exists($object, $fieldname) or !is_callable([$object, $fieldname])) {
 						continue;
 					}
-				} catch (Exception $e) {
-					continue;
-				}
 
-				unset($objects[$o_key]);
+					try {
+						$result = call_user_func_array([$object, $fieldname], []);
+
+						if ($condition->evaluate($result)) {
+							continue;
+						}
+					} catch (Exception $e) {
+						continue;
+					}
+
+					unset($objects[$key]);
+				}
 			}
 		}
 
