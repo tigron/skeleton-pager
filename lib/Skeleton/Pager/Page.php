@@ -405,7 +405,6 @@ trait Page {
 	 * @return int $count
 	 */
 	private static function trait_get_aggregate($type, $extra_conditions = [], $extra_joins = [], $extra_parameters = []) {
-
 		$db = self::trait_get_database();
 		$table = self::trait_get_database_table();
 		$where = self::trait_get_search_where($extra_conditions, $extra_joins);
@@ -458,7 +457,13 @@ trait Page {
 					}
 					return $sum;
 				}
-				$sql = 'SELECT SUM(' . $extra_parameters['field'] . ') FROM `' . $table . '` WHERE id IN ( SELECT ' . $table . '.id ';
+				list($field_table, $field) = explode('.', $extra_parameters['field']);
+				if ($field_table == $table) {
+					$sql = 'SELECT SUM(' . $extra_parameters['field'] . ') FROM `' . $table . '` WHERE id IN ( SELECT ' . $table . '.id ';
+				} else {
+					$sql = '(SELECT SUM(DISTINCT ' . $extra_parameters['field'] . ') ';
+				}
+
 				$join_mandatory = true;
 				break;
 			default:
@@ -476,7 +481,6 @@ trait Page {
 		 */
 		$table_joins = self::trait_get_joins();
 		$table_joins = array_merge($table_joins, $extra_joins);
-
 		$condition_joins = [];
 		foreach ($extra_conditions as $field => $condition) {
 			if ($field != '%search%') {
