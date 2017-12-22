@@ -47,7 +47,11 @@ class Condition {
 	public function __construct($local_field, $comparison, $value) {
 		$this->local_field = $local_field;
 		$this->comparison = $comparison;
-		$this->value = $value;
+		if (!is_array($value)) {
+			$this->value = [ $value ];
+		} else {
+			$this->value = $value;
+		}
 	}
 
 	/**

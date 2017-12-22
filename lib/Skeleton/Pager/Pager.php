@@ -154,14 +154,16 @@ class Pager {
 			$condition[$field][] = $params;
 			return;
 		}
-
 		$field = array_shift($params);
 		$field = $this->expand_field_name($field);
 
 		if (count($params) == 1) {
-			$condition = new Condition($field, '=', array_shift($params));
+			$params = array_shift($params);
+			$condition = new Condition($field, '=', $params);
 		} else {
-			$condition = new Condition($field, array_shift($params), $params);
+			$comparison = array_shift($params);
+			$params = array_shift($params);
+			$condition = new Condition($field, $comparison, $params);
 		}
 		$conditions[$field][] = $condition;
 
