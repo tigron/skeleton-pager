@@ -94,8 +94,8 @@ class Condition {
 	public function __toString() {
 		$db = Database::get();
 		if ($this->comparison == 'IN') {
-			if (is_array($this->value[0])) {
-				$list = implode($this->value[0], ', ');
+			if (is_array($this->value)) {
+				$list = implode($this->value, ', ');
 			} else {
 				$list = $this->value;
 			}
