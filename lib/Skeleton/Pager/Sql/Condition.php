@@ -128,16 +128,16 @@ class Condition {
 		}
 
 		if ($this->get_comparison() == '=' AND $condition->get_comparison() == 'IN') {
-			foreach ($condition->get_value()[0] as $value) {
-				if ($this->get_value() == $value) {
+			foreach ($condition->get_value() as $value) {
+				if (in_array($value, $this->get_value())) {
 					return true;
 				}
 			}
 		}
 
 		if ($condition->get_comparison() == '=' AND $this->get_comparison() == 'IN') {
-			foreach ($this->get_value()[0] as $value) {
-				if ($condition->get_value() == $value) {
+			foreach ($this->get_value() as $value) {
+				if (in_array($value, $condition->get_value())) {
 					return true;
 				}
 			}
