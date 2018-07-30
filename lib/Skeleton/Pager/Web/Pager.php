@@ -76,7 +76,7 @@ class Pager extends \Skeleton\Pager\Pager {
 				$this->options = array_replace_recursive($this->options, $this->get_options_from_hash($_SESSION['pager'][$pager_uri_key]));
 			} elseif (isset($_GET['q'])) {
 				unset($this->options['conditions']);
-				$this->options = array_replace_recursive($this->options, $this->get_options_from_hash($_GET['q']));
+ 				$this->options = array_replace_recursive($this->options, $this->get_options_from_hash($_GET['q']));
 			}
 		}
 
