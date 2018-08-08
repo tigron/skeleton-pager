@@ -150,10 +150,6 @@ class Pager {
 		$params = func_get_args();
 		$conditions = $this->options['conditions'];
 
-		if (is_a($params, '\Skeleton\Pager\Sql\Condition')) {
-			$condition[$field][] = $params;
-			return;
-		}
 		$field = array_shift($params);
 		$field = $this->expand_field_name($field);
 
@@ -165,6 +161,7 @@ class Pager {
 			$params = array_shift($params);
 			$condition = new Condition($field, $comparison, $params);
 		}
+
 		$conditions[$field][] = $condition;
 
 		$this->options['conditions'] = $conditions;
@@ -349,7 +346,21 @@ class Pager {
 	 * @return array $options
 	 */
 	protected function get_options_from_hash($hash) {
-		return unserialize(base64_decode(urldecode($hash)));
+		$data = gzdecode(base64_decode(urldecode($hash)));
+		$options = json_decode($data, true);
+
+		if (isset($options['conditions']) and is_array($options['conditions'])) {
+			$conditions = [];
+			foreach ($options['conditions'] as $condition_key => $condition) {
+				foreach ($condition as $setting_key => $setting) {
+					$conditions[$condition_key][$setting_key] = new Condition($setting['local_field'], $setting['comparison'], $setting['value']);
+				}
+			}
+
+			$options['conditions'] = $conditions;
+		}
+
+		return $options;
 	}
 
 	/**
@@ -378,16 +389,32 @@ class Pager {
 			$direction = $this->options['direction'];
 		}
 
-		$options = array(
+		if (is_array($conditions)) {
+			foreach ($conditions as $condition_key => $condition) {
+				foreach ($condition as $setting_key => $setting) {
+					$flat_conditions[$condition_key][$setting_key] = [
+						'local_field' => $setting->get_local_field(),
+						'comparison' => $setting->get_comparison(),
+						'value' => $setting->get_value(),
+					];
+				}
+			}
+		} else {
+			$flat_conditions = $conditions;
+		}
+
+		$options = [
 			'classname' => $this->classname,
-			'conditions' => $conditions,
+			'conditions' => $flat_conditions,
 			'page' => $page,
 			'sort' => $sort,
 			'direction' => $direction,
 			'joins' => $this->options['joins'],
-		);
+		];
 
-		$hash = urlencode(base64_encode(serialize($options)));
+		$data = json_encode($options);
+		$hash = urlencode(base64_encode(gzencode($data)));
+
 		return $hash;
 	}
 
