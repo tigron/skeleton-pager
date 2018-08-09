@@ -390,6 +390,8 @@ class Pager {
 		}
 
 		if (is_array($conditions)) {
+			$flat_conditions = [];
+
 			foreach ($conditions as $condition_key => $condition) {
 				foreach ($condition as $setting_key => $setting) {
 					$flat_conditions[$condition_key][$setting_key] = [
