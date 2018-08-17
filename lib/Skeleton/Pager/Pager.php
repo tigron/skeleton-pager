@@ -353,7 +353,11 @@ class Pager {
 			$conditions = [];
 			foreach ($options['conditions'] as $condition_key => $condition) {
 				foreach ($condition as $setting_key => $setting) {
-					$conditions[$condition_key][$setting_key] = new Condition($setting['local_field'], $setting['comparison'], $setting['value']);
+					if ($condition_key === '%search%') {
+						$conditions[$condition_key][$setting_key] = $setting;
+					} else {
+						$conditions[$condition_key][$setting_key] = new Condition($setting['local_field'], $setting['comparison'], $setting['value']);
+					}
 				}
 			}
 
@@ -394,11 +398,15 @@ class Pager {
 
 			foreach ($conditions as $condition_key => $condition) {
 				foreach ($condition as $setting_key => $setting) {
-					$flat_conditions[$condition_key][$setting_key] = [
-						'local_field' => $setting->get_local_field(),
-						'comparison' => $setting->get_comparison(),
-						'value' => $setting->get_value(),
-					];
+					if ($condition_key === '%search%') {
+						$flat_conditions[$condition_key][$setting_key] = $setting;
+					} else {
+						$flat_conditions[$condition_key][$setting_key] = [
+							'local_field' => $setting->get_local_field(),
+							'comparison' => $setting->get_comparison(),
+							'value' => $setting->get_value(),
+						];
+					}
 				}
 			}
 		} else {
