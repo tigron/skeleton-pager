@@ -191,9 +191,6 @@ class Pager {
 			}
 		}
 
-
-
-
 		foreach ($this->options['conditions'] as $cond_field => $stored_conditions) {
 			if ($field != $cond_field) {
 				continue;
@@ -206,6 +203,7 @@ class Pager {
 
 			}
 		}
+
 		return false;
 	}
 
@@ -220,13 +218,6 @@ class Pager {
 	 */
 	public function add_join($remote_table, $remote_id, $local_field, $extra_conditions = []) {
 		$local_field = $this->expand_field_name($local_field);
-		/*
-			$extra_join = [
-				$remote_table,
-				$remote_id,
-				$local_field
-			]
-		*/
 
 		$join = new Join($remote_table, $remote_id, $local_field);
 
@@ -364,6 +355,15 @@ class Pager {
 			$options['conditions'] = $conditions;
 		}
 
+		if (isset($options['joins']) and is_array($options['joins'])) {
+			$joins = [];
+			foreach ($options['joins'] as $join) {
+				$joins[] = new Join($join['remote_table'], $join['remote_id'], $join['local_field'], $join['conditions']);
+			}
+
+			$options['joins'] = $joins;
+		}
+
 		return $options;
 	}
 
@@ -413,13 +413,23 @@ class Pager {
 			$flat_conditions = $conditions;
 		}
 
+		$joins = [];
+		foreach ($this->options['joins'] as $join) {
+			$joins[] = [
+				'remote_table' => $join->get_remote_table(),
+				'remote_id' => $join->get_remote_id(),
+				'local_field' => $join->get_local_field(),
+				'conditions' => $join->get_conditions(),
+			];
+		}
+
 		$options = [
 			'classname' => $this->classname,
 			'conditions' => $flat_conditions,
 			'page' => $page,
 			'sort' => $sort,
 			'direction' => $direction,
-			'joins' => $this->options['joins'],
+			'joins' => $joins,
 		];
 
 		$data = json_encode($options);
@@ -493,7 +503,7 @@ class Pager {
 	public static function get_by_options_hash($options_hash) {
 		$options = unserialize(base64_decode(urldecode($options_hash)));
 		$pager = new self($options['classname']);
-		$pager->options = $options;
+		$pager->options = $pager->get_options_from_hash($options);
 		return $pager;
 	}
 }

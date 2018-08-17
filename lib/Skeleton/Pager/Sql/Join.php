@@ -18,7 +18,7 @@ class Join {
 	 * @access private
 	 * @var $remote_table
 	 */
-	private $remote_table = '';
+	private $remote_table = null;
 
 	/**
 	 * remote id
@@ -26,7 +26,7 @@ class Join {
 	 * @access private
 	 * @var $remote_id
 	 */
-	private $remote_id = '';
+	private $remote_id = null;
 
 	/**
 	 * local_field
@@ -34,7 +34,7 @@ class Join {
 	 * @access private
 	 * @var $local_field
 	 */
-	private $local_field = '';
+	private $local_field = null;
 
 	/**
 	 * Conditions
@@ -76,6 +76,36 @@ class Join {
 	 */
 	public function get_remote_table() {
 		return $this->remote_table;
+	}
+
+	/**
+	 * Get remote_id
+	 *
+	 * @access public
+	 * @return string $remote_id
+	 */
+	public function get_remote_id() {
+		return $this->remote_id;
+	}
+
+	/**
+	 * Get local_field
+	 *
+	 * @access public
+	 * @return string $local_field
+	 */
+	public function get_local_field() {
+		return $this->local_field;
+	}
+
+	/**
+	 * Get local_field
+	 *
+	 * @access public
+	 * @return string $local_field
+	 */
+	public function get_conditions() {
+		return $this->conditions;
 	}
 
 	/**
