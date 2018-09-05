@@ -115,7 +115,23 @@ trait Page {
 				continue;
 			}
 
-			if (!isset($condition_joins[ $table_join->get_remote_table()])) {
+			$remove = true;
+			if (isset($condition_joins[ $table_join->get_remote_table()])) {
+				$remove = false;
+			}
+			if ($remove == true) {
+				foreach ($table_joins as $table_join2) {
+					$table_name = $table_join2->get_local_field();
+					if (strpos($table_name, '.') > 0) {
+						$table_name = explode('.', $table_name)[0];
+						if ($table_name != $table && $table_name == $table_join->get_remote_table()) {
+							$remove = false;
+						}
+					}
+				}
+			}
+
+			if ($remove) {
 				unset($table_joins[$key]);
 			}
 		}
@@ -128,7 +144,6 @@ trait Page {
 		 */
 
 		$sql .= 'WHERE 1 ' . $where . "\n";
-
 		if ($sorter == 'db') {
 			if (strpos($sort, '.') === false AND $sort != 1) {
 				$sort = $table . '.' . $sort;
@@ -506,7 +521,24 @@ trait Page {
 			if (isset($condition_joins['*'])) {
 				continue;
 			}
-			if (!isset($condition_joins[$table_join->get_remote_table()])) {
+
+			$remove = true;
+			if (isset($condition_joins[ $table_join->get_remote_table()])) {
+				$remove = false;
+			}
+			if ($remove == true) {
+				foreach ($table_joins as $table_join2) {
+					$table_name = $table_join2->get_local_field();
+					if (strpos($table_name, '.') > 0) {
+						$table_name = explode('.', $table_name)[0];
+						if ($table_name != $table && $table_name == $table_join->get_remote_table()) {
+							$remove = false;
+						}
+					}
+				}
+			}
+
+			if ($remove) {
 				unset($table_joins[$key]);
 			}
 		}
