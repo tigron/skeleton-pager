@@ -109,7 +109,8 @@ trait Page {
 		}
 		$sort_condition_table = substr($sort, 0, strpos($sort, '.'));
 		$condition_joins[$sort_condition_table] = $sort_condition_table;
-		for ($i = 0; $i < 2; $i++) {
+		do {
+			$remove_count = 0;
 			foreach ($table_joins as $key => $table_join) {
 				if (isset($condition_joins['*'])) {
 					continue;
@@ -132,10 +133,11 @@ trait Page {
 				}
 
 				if ($remove) {
+					$remove_count++;
 					unset($table_joins[$key]);
 				}
 			}
-		}
+		} while ($remove_count > 0);
 		foreach ($table_joins as $table_join) {
 			$sql .= $table_join;
 		}
@@ -518,7 +520,8 @@ trait Page {
 			}
 		}
 
-		for ($i = 0; $i < 2; $i++) {
+		do {
+			$remove_count = 0;
 			foreach ($table_joins as $key => $table_join) {
 				if (isset($condition_joins['*'])) {
 					continue;
@@ -541,10 +544,11 @@ trait Page {
 				}
 
 				if ($remove) {
+					$remove_count++;
 					unset($table_joins[$key]);
 				}
 			}
-		}
+		} while ($remove_count > 0);
 		foreach ($table_joins as $table_join) {
 			$sql .= $table_join;
 		}
