@@ -109,30 +109,31 @@ trait Page {
 		}
 		$sort_condition_table = substr($sort, 0, strpos($sort, '.'));
 		$condition_joins[$sort_condition_table] = $sort_condition_table;
+		for ($i = 0; $i < 2; $i++) {
+			foreach ($table_joins as $key => $table_join) {
+				if (isset($condition_joins['*'])) {
+					continue;
+				}
 
-		foreach ($table_joins as $key => $table_join) {
-			if (isset($condition_joins['*'])) {
-				continue;
-			}
-
-			$remove = true;
-			if (isset($condition_joins[ $table_join->get_remote_table()])) {
-				$remove = false;
-			}
-			if ($remove == true) {
-				foreach ($table_joins as $table_join2) {
-					$table_name = $table_join2->get_local_field();
-					if (strpos($table_name, '.') > 0) {
-						$table_name = explode('.', $table_name)[0];
-						if ($table_name != $table && $table_name == $table_join->get_remote_table()) {
-							$remove = false;
+				$remove = true;
+				if (isset($condition_joins[ $table_join->get_remote_table()])) {
+					$remove = false;
+				}
+				if ($remove == true) {
+					foreach ($table_joins as $table_join2) {
+						$table_name = $table_join2->get_local_field();
+						if (strpos($table_name, '.') > 0) {
+							$table_name = explode('.', $table_name)[0];
+							if ($table_name == $table_join->get_remote_table()) {
+								$remove = false;
+							}
 						}
 					}
 				}
-			}
 
-			if ($remove) {
-				unset($table_joins[$key]);
+				if ($remove) {
+					unset($table_joins[$key]);
+				}
 			}
 		}
 		foreach ($table_joins as $table_join) {
@@ -517,29 +518,31 @@ trait Page {
 			}
 		}
 
-		foreach ($table_joins as $key => $table_join) {
-			if (isset($condition_joins['*'])) {
-				continue;
-			}
+		for ($i = 0; $i < 2; $i++) {
+			foreach ($table_joins as $key => $table_join) {
+				if (isset($condition_joins['*'])) {
+					continue;
+				}
 
-			$remove = true;
-			if (isset($condition_joins[ $table_join->get_remote_table()])) {
-				$remove = false;
-			}
-			if ($remove == true) {
-				foreach ($table_joins as $table_join2) {
-					$table_name = $table_join2->get_local_field();
-					if (strpos($table_name, '.') > 0) {
-						$table_name = explode('.', $table_name)[0];
-						if ($table_name != $table && $table_name == $table_join->get_remote_table()) {
-							$remove = false;
+				$remove = true;
+				if (isset($condition_joins[ $table_join->get_remote_table()])) {
+					$remove = false;
+				}
+				if ($remove == true) {
+					foreach ($table_joins as $table_join2) {
+						$table_name = $table_join2->get_local_field();
+						if (strpos($table_name, '.') > 0) {
+							$table_name = explode('.', $table_name)[0];
+							if ($table_name == $table_join->get_remote_table()) {
+								$remove = false;
+							}
 						}
 					}
 				}
-			}
 
-			if ($remove) {
-				unset($table_joins[$key]);
+				if ($remove) {
+					unset($table_joins[$key]);
+				}
 			}
 		}
 		foreach ($table_joins as $table_join) {
