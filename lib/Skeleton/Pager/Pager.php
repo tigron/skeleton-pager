@@ -336,8 +336,8 @@ class Pager {
 	 * @param string $hash
 	 * @return array $options
 	 */
-	protected function get_options_from_hash($hash) {
-		$data = gzdecode(base64_decode(urldecode($hash)));
+	protected static function get_options_from_hash($hash) {
+		$data = gzdecode(base64_decode(rawurldecode($hash)));
 		$options = json_decode($data, true);
 
 		if (isset($options['conditions']) and is_array($options['conditions'])) {
@@ -433,7 +433,7 @@ class Pager {
 		];
 
 		$data = json_encode($options);
-		$hash = urlencode(base64_encode(gzencode($data)));
+		$hash = rawurlencode(base64_encode(gzencode($data)));
 
 		return $hash;
 	}
@@ -501,9 +501,9 @@ class Pager {
 	 * @return Web_Pager $pager
 	 */
 	public static function get_by_options_hash($options_hash) {
-		$options = unserialize(base64_decode(urldecode($options_hash)));
+		$options = self::get_options_from_hash($options_hash);
 		$pager = new self($options['classname']);
-		$pager->options = $pager->get_options_from_hash($options);
+		$pager->options = $options;
 		return $pager;
 	}
 }
