@@ -243,10 +243,10 @@ trait Page {
 			// we are dealing with.
 			$definitions[$key]['simple_type'] = null;
 
-			if (strpos($definition['type'], '(') !== false) {
-				$type = substr($definition['type'], 0, strpos($definition['type'], '('));
+			if (strpos($definition['Type'], '(') !== false) {
+				$type = substr($definition['Type'], 0, strpos($definition['Type'], '('));
 			} else {
-				$type = $definition['type'];
+				$type = $definition['Type'];
 			}
 
 			switch ($type) {
@@ -276,9 +276,9 @@ trait Page {
 			$definitions[$key]['index_type'] = null;
 
 			foreach ($indexes as $index) {
-				if ($index['column_name'] == $definition['field']) {
+				if ($index['Column_name'] == $definition['Field']) {
 					$definitions[$key]['has_index'] = true;
-					$definitions[$key]['index_type'] = strtolower($index['index_type']);
+					$definitions[$key]['index_type'] = strtolower($index['Index_type']);
 				}
 			}
 		}
@@ -352,7 +352,7 @@ trait Page {
 					$where .= ' AND (0 ';
 
 					foreach ($definitions as $definition) {
-						$where .= self::trait_get_comparison($table . '.' . $definition['field'], $element, $definition);
+						$where .= self::trait_get_comparison($table . '.' . $definition['Field'], $element, $definition);
 					}
 
 					foreach ($joins as $join) {
@@ -360,7 +360,7 @@ trait Page {
 
 
 						foreach ($definitions as $definition) {
-							$where .= self::trait_get_comparison($join . '.' . $definition['field'], $element, $definition);
+							$where .= self::trait_get_comparison($join . '.' . $definition['Field'], $element, $definition);
 						}
 					}
 
@@ -368,7 +368,7 @@ trait Page {
 						$definitions = self::trait_get_table_definition($extra_join->get_remote_table());
 
 						foreach ($definitions as $definition) {
-							$where .= self::trait_get_comparison($extra_join->get_remote_table() . '.' . $definition['field'], $element, $definition);
+							$where .= self::trait_get_comparison($extra_join->get_remote_table() . '.' . $definition['Field'], $element, $definition);
 						}
 					}
 				} else {
@@ -382,7 +382,7 @@ trait Page {
 						}
 
 						foreach ($definitions[$condition_table] as $definition) {
-							if ($definition['field'] == $condition_field) {
+							if ($definition['Field'] == $condition_field) {
 								$where .= self::trait_get_comparison($field, $element, $definition);
 							}
 						}
