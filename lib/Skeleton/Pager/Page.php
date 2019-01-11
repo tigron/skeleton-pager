@@ -29,6 +29,7 @@ trait Page {
 	public static function get_paged($sort = null, $direction = 'asc', $page = 1, $extra_conditions = [], $all = false, $extra_joins = []) {
 		$db = self::trait_get_database();
 		$table = self::trait_get_database_table();
+		$field_id = self::trait_get_table_field_id();
 		$where = self::trait_get_search_where($extra_conditions, $extra_joins);
 		$joins = self::trait_get_link_tables();
 
@@ -152,7 +153,7 @@ trait Page {
 				$sort = $table . '.' . $sort;
 			}
 
-			$sql .= 'ORDER BY ' . $sort . ' ' . $direction;
+			$sql .= 'ORDER BY ' . $sort . ' ' . $direction . ', ' . $table . '.' . $field_id;
 		}
 
 		if ($all !== true AND $sorter == 'db') {
