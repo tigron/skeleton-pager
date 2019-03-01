@@ -60,7 +60,7 @@ class Pager extends \Skeleton\Pager\Pager {
 		$template->assign('field_name', $field_name);
 		$template->assign('header', $header);
 		$template->assign('pager', $this);
-		return $template->render('@skeleton-pager\header.twig', false);
+		return $template->render(\Skeleton\Pager\Config::$header_template, false);
 	}
 
 	/**

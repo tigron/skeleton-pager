@@ -37,6 +37,16 @@ class Config {
 	 * @access public
 	 * @var string $links_template
 	 */
-	public static $links_template = '@skeleton-pager\links.twig';
+	public static $links_template = '@skeleton-pager\bootstrap3\links.twig';
+
+	/**
+	 * header template
+	 *
+	 * Set the template to render the page header
+	 *
+	 * @access public
+	 * @var string $header_template
+	 */
+	public static $header_template = '@skeleton-pager\bootstrap3\header.twig';
 
 }
