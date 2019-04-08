@@ -337,8 +337,14 @@ class Pager {
 	 * @return array $options
 	 */
 	protected static function get_options_from_hash($hash) {
-		$data = gzdecode(base64_decode(rawurldecode($hash)));
-		$options = json_decode($data, true);
+		$data = @gzdecode(base64_decode(rawurldecode($hash)));
+		if ($data !== false) {
+			$options = json_decode($data, true);
+		} else {
+			$options = [
+				'conditions' => []
+			];
+		}
 
 		if (isset($options['conditions']) and is_array($options['conditions'])) {
 			$conditions = [];
