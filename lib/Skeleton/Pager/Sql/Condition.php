@@ -100,7 +100,11 @@ class Condition {
 				$list = $this->value;
 			}
 
-			return $db->quote_identifier($this->local_field) . ' IN (' . $list . ')' . "\n\t";
+			if (strlen($list) == 0) {
+				return '1 = 2';
+			} else {
+				return $db->quote_identifier($this->local_field) . ' IN (' . $list . ')' . "\n\t";
+			}
 		} elseif ($this->comparison == 'BETWEEN') {
 			return $db->quote_identifier($this->local_field) . ' BETWEEN ' . $db->quote($this->value[0]) . ' AND ' . $db->quote($this->value[1]) . "\n\t";
 		} elseif (is_array($this->value)) {
