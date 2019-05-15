@@ -101,7 +101,7 @@ class Condition {
 			}
 
 			if (strlen($list) == 0) {
-				return '1 = 2';
+				return '1 = 2' . "\n\t";
 			} else {
 				return $db->quote_identifier($this->local_field) . ' IN (' . $list . ')' . "\n\t";
 			}
