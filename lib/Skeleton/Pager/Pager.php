@@ -304,10 +304,11 @@ class Pager {
 	 * Clear condition
 	 *
 	 * @access public
-	 * @param string $key
+	 * @param string $field
 	 */
-	public function clear_condition($key) {
-		unset($this->options['conditions'][$key]);
+	public function clear_condition($field) {
+		$field = $this->expand_field_name($field);
+		unset($this->options['conditions'][$field]);
 	}
 
 	/**
