@@ -34,13 +34,21 @@ trait Page {
 		$joins = self::trait_get_link_tables();
 
 		if ($sort === null) {
-			$sort = $table . '.' . self::trait_get_table_field_id();
-		}
+			$sort = $db->quote_identifier($table) . '.' . $db->quote_identifier(self::trait_get_table_field_id());
+		} else {
+			if (strpos($sort, '`') === false && strpos($sort, '"') === false) {
+				if (strpos($sort, '.') === false) {
+					$sort = $db->quote_identifier($sort);
+				} else {
+					$parts = explode('.', $sort);
 
-		// $sort is sometimes passed as null, which looks better, but we want 1
-		// by default
-		if ($sort == null) {
-			$sort = 1;
+					foreach ($parts as $key => $value) {
+						$parts[$key] = $db->quote_identifier($value);
+					}
+
+					$sort = implode('.', $parts);
+				}
+			}
 		}
 
 		$object = new \ReflectionClass(get_class());
@@ -78,8 +86,16 @@ trait Page {
 			$direction = 'desc';
 		}
 
-		$sql = 'SELECT DISTINCT ' . $table . '.' . self::trait_get_table_field_id() . ' as id ' . "\n";
-		$sql .= 'FROM `' . $table . '`' . "\n";
+		$sql = 'SELECT DISTINCT ' . $db->quote_identifier($table) . '.' . $db->quote_identifier(self::trait_get_table_field_id()) . ' as id ';
+
+		// PostgreSQL requires the fields used in the ORDER BY clause to be in the SELECT list as well
+		if ($sorter == 'db') {
+			$sql .= ', ' . $sort . ' ';
+		}
+
+		$sql .= "\n";
+
+		$sql .= 'FROM ' . $db->quote_identifier($table) . "\n";
 
 		/**
 		 * Automatic join: Join if a condition or a sort is set
@@ -147,24 +163,26 @@ trait Page {
 		 * End of automatic join
 		 */
 
-		$sql .= 'WHERE 1 ' . $where . "\n";
+		$sql .= 'WHERE 1=1 ' . $where . "\n";
 		if ($sorter == 'db') {
+			/*
+			// I don't think this is necessary anymore
 			if (strpos($sort, '.') === false AND $sort != 1) {
-				$sort = $table . '.' . $sort;
+				$sort = $db->quote_identifier($table) . '.' . $db->quote_identifier($sort);
 			}
-
-			$sql .= 'ORDER BY ' . $sort . ' ' . $direction . ', ' . $table . '.' . $field_id;
+			*/
+			$sql .= 'ORDER BY ' . $sort . ' ' . $direction . ', ' . $db->quote_identifier($table) . '.' . $db->quote_identifier($field_id);
 		}
 
 		if ($all !== true AND $sorter == 'db') {
-			$sql .= ' LIMIT ' . ($page-1)*$limit . ', ' . $limit;
+			$sql .= ' LIMIT ' . $limit . ' OFFSET ' . ($page-1)*$limit;
 		}
 
-		$ids = $db->get_column($sql);
+		$rows = $db->get_all($sql);
 
 		$objects = [];
-		foreach ($ids as $id) {
-			$objects[] = self::get_by_id($id);
+		foreach ($rows as $row) {
+			$objects[] = self::get_by_id($row['id']);
 		}
 
 		foreach ($extra_conditions as $fieldname => $conditions) {
@@ -464,7 +482,7 @@ trait Page {
 				if ($sorter == 'object') {
 					return count(self::$objects_cache['objects']);
 				}
-				$sql = '(SELECT COUNT(DISTINCT ' . $table . '.' . self::trait_get_table_field_id() . ') ';
+				$sql = '(SELECT COUNT(DISTINCT ' . $db->quote_identifier($table) . '.' . $db->quote_identifier(self::trait_get_table_field_id()) . ') ';
 				break;
 			case 'sum':
 				if (!isset($extra_parameters['field'])) {
@@ -479,9 +497,11 @@ trait Page {
 					}
 					return $sum;
 				}
+
 				list($field_table, $field) = explode('.', $extra_parameters['field']);
+
 				if ($field_table == $table) {
-					$sql = 'SELECT SUM(' . $extra_parameters['field'] . ') FROM `' . $table . '` WHERE id IN ( SELECT ' . $table . '.id ';
+					$sql = 'SELECT SUM(' . $extra_parameters['field'] . ') FROM ' . $db->quote_identifier($table) . ' WHERE id IN ( SELECT ' . $db->quote_identifier($table) . '.' . $db->quote_identifier('id') ;
 				} else {
 					$sql = '(SELECT SUM(DISTINCT ' . $extra_parameters['field'] . ') ';
 				}
@@ -492,7 +512,7 @@ trait Page {
 				throw new Exception('Unsupported aggregate');
 		}
 
-		$sql .=  "\n" . 'FROM `' . $table . '` ' . "\n";
+		$sql .=  "\n" . 'FROM ' . $db->quote_identifier($table) . ' ' . "\n";
 
 		/**
 		 * Automatic join: Join if a condition or a sort is set
@@ -503,6 +523,7 @@ trait Page {
 		 */
 		$table_joins = self::trait_get_joins();
 		$table_joins = array_merge($table_joins, $extra_joins);
+
 		$condition_joins = [];
 		foreach ($extra_conditions as $field => $condition) {
 			if ($field != '%search%') {
@@ -550,11 +571,12 @@ trait Page {
 				}
 			}
 		} while ($remove_count > 0);
+
 		foreach ($table_joins as $table_join) {
 			$sql .= $table_join;
 		}
 
-		$sql .= 'WHERE 1 ' . $where . ')';
+		$sql .= 'WHERE 1=1 ' . $where . ')';
 		$count = $db->get_one($sql);
 
 		return $count;
@@ -564,7 +586,7 @@ trait Page {
 		$db = self::trait_get_database();
 		$table = self::trait_get_database_table();
 		$fields = $db->get_columns($table);
-		$tables = $db->get_column('SHOW tables');
+		$tables = $db->get_tables();
 
 		$joins = [];
 		foreach ($fields as $field) {
