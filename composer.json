@@ -2,8 +2,8 @@
     "name": "tigron/skeleton-pager",
     "description": "Tigron Skeleton pager functionality",
     "type": "library",
-    "require-dev": {
-		"tigron/skeleton-database": "dev-master"
+    "require": {
+        "tigron/skeleton-database": "^0.2"
     },
     "license": "MIT",
     "authors": [
@@ -19,5 +19,4 @@
     "autoload": {
         "psr-4": { "Skeleton\\Pager\\": "lib/Skeleton/Pager/" }
     }
-
 }
