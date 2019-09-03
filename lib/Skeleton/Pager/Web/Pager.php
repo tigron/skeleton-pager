@@ -75,8 +75,13 @@ class Pager extends \Skeleton\Pager\Pager {
 			if (!isset($_GET['q']) AND isset($_SESSION['pager'][$pager_uri_key]) AND Config::$sticky_pager) {
 				$this->options = array_replace_recursive($this->options, $this->get_options_from_hash($_SESSION['pager'][$pager_uri_key]));
 			} elseif (isset($_GET['q'])) {
-				unset($this->options['conditions']);
- 				$this->options = array_replace_recursive($this->options, $this->get_options_from_hash($_GET['q']));
+				$query_options = $this->get_options_from_hash($_GET['q']);
+
+				// If multiple pagers exist on the same page, only load the options of the one with the same classname
+				if ($query_options['classname'] == $this->classname) {
+					unset($this->options['conditions']);
+	 				$this->options = array_replace_recursive($this->options, $this->get_options_from_hash($_GET['q']));
+				}
 			}
 		}
 
