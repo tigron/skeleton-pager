@@ -34,11 +34,11 @@ trait Page {
 		$joins = self::trait_get_link_tables();
 
 		if ($sort === null) {
-			$sort = $db->quote_identifier($table) . '.' . $db->quote_identifier(self::trait_get_table_field_id());
+			$escaped_sort = $db->quote_identifier($table) . '.' . $db->quote_identifier(self::trait_get_table_field_id());
 		} else {
 			if (strpos($sort, '`') === false && strpos($sort, '"') === false) {
 				if (strpos($sort, '.') === false) {
-					$sort = $db->quote_identifier($sort);
+					$escaped_sort = $db->quote_identifier($sort);
 				} else {
 					$parts = explode('.', $sort);
 
@@ -46,7 +46,7 @@ trait Page {
 						$parts[$key] = $db->quote_identifier($value);
 					}
 
-					$sort = implode('.', $parts);
+					$escaped_sort = implode('.', $parts);
 				}
 			}
 		}
@@ -126,6 +126,7 @@ trait Page {
 		}
 		$sort_condition_table = substr($sort, 0, strpos($sort, '.'));
 		$condition_joins[$sort_condition_table] = $sort_condition_table;
+
 		do {
 			$remove_count = 0;
 			foreach ($table_joins as $key => $table_join) {
@@ -155,6 +156,7 @@ trait Page {
 				}
 			}
 		} while ($remove_count > 0);
+
 		foreach ($table_joins as $table_join) {
 			$sql .= $table_join;
 		}
@@ -171,7 +173,7 @@ trait Page {
 				$sort = $db->quote_identifier($table) . '.' . $db->quote_identifier($sort);
 			}
 			*/
-			$sql .= 'ORDER BY ' . $sort . ' ' . $direction . ', ' . $db->quote_identifier($table) . '.' . $db->quote_identifier($field_id);
+			$sql .= 'ORDER BY ' . $escaped_sort . ' ' . $direction . ', ' . $db->quote_identifier($table) . '.' . $db->quote_identifier($field_id);
 		}
 
 		if ($all !== true AND $sorter == 'db') {
