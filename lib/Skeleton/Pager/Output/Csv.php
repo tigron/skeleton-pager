@@ -19,6 +19,18 @@ class Csv extends \Skeleton\Pager\Output {
 	 */
 	public function output() {
 		$arguments = func_get_args();
+		$file = call_user_func_array( [$this, 'get_file'], $arguments);
+		$file->client_download();
+	}
+
+	/**
+	 * Get file
+	 *
+	 * @access public
+	 * @return File $file
+	 */
+	public function get_file() {
+		$arguments = func_get_args();
 		$this->pager->page();
 		$result = [];
 
@@ -35,7 +47,6 @@ class Csv extends \Skeleton\Pager\Output {
 			throw new \Exception('This function requires 1 or 2 arrays as parameter: The first is the header, second are the field names or closures.');
 		}
 
-
 		foreach ($this->pager->items as $item) {
 			$row = [];
 			foreach ($headers as $key => $header) {
@@ -48,8 +59,10 @@ class Csv extends \Skeleton\Pager\Output {
 			$result[] = $row;
 		}
 
-		$this->output_array($headers, $result);
+		$content = $this->output_array($headers, $result);
 
+		$file = \Skeleton\File\File::store($this->pager->get_classname() . '.csv', $content);
+		return $file;
 	}
 
 	/**
@@ -60,33 +73,19 @@ class Csv extends \Skeleton\Pager\Output {
 	 * @param array $values
 	 */
 	private function output_array($headers, $array) {
-		header('Content-Type: text/csv; charset=utf-8');
-		header('Content-Disposition: attachment; filename=' . $this->pager->get_classname() . '.csv');
+		$content = '';
 
 		foreach ($headers as $header) {
-			echo $header . ';';
+			$content .= $header . ';';
 		}
-		echo "\n";
+		$content .= "\n";
 		foreach ($array as $values) {
 			foreach ($values as $value) {
-				echo $value . ';';
+				$content .= $value . ';';
 			}
-			echo "\n";
+			$content .= "\n";
 		}
-		exit;
-
-		$result = $this->pager->page();
-		foreach ($fields as $field) {
-			echo $field . ';';
-		}
-		echo "\n";
-		foreach ($this->pager->items as $item) {
-			foreach ($fields as $field) {
-				echo \Skeleton\Pager\Util::object_get_attribute($item, $field) . ';';
-			}
-			echo "\n";
-		}
-		exit;
+		return $content;
 	}
 
 }

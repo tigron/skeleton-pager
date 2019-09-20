@@ -17,6 +17,18 @@ class Xlsx extends \Skeleton\Pager\Output {
 	 */
 	public function output() {
 		$arguments = func_get_args();
+		$file = call_user_func_array([ $this, 'get_file'], $arguments);
+		$file->client_download();
+	}
+
+	/**
+	 * Get file
+	 *
+	 * @access public
+	 * @return File $file
+	 */
+	public function get_file() {
+		$arguments = func_get_args();
 		$this->pager->page();
 		$result = [];
 
@@ -45,7 +57,10 @@ class Xlsx extends \Skeleton\Pager\Output {
 			}
 			$result[] = $row;
 		}
-		$this->output_array($headers, $result);
+
+		$content = $this->output_array($headers, $result);
+		$file = \Skeleton\File\File::store($this->pager->get_classname() . '.xlsx', $content);
+		return $file;
 	}
 
 	/**
@@ -67,9 +82,6 @@ class Xlsx extends \Skeleton\Pager\Output {
 		$objWriter->save("php://output");
 		$content = ob_get_clean();
 
-		$file = \File::store($this->pager->get_classname() . '.xlsx', $content);
-		$file->expire();
-
-		$file->client_download();
+		return $content;
 	}
 }
