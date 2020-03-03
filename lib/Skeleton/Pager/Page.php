@@ -272,6 +272,7 @@ trait Page {
 
 			switch ($type) {
 				case 'text':
+				case 'tinytext':
 				case 'mediumtext':
 				case 'longtext':
 				case 'varchar':
