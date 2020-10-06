@@ -3,7 +3,7 @@
     "description": "Tigron Skeleton pager functionality",
     "type": "library",
     "require": {
-        "tigron/skeleton-database": "^0.2"
+        "tigron/skeleton-database": "^0.3"
     },
     "license": "MIT",
     "authors": [
