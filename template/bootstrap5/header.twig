@@ -1,0 +1,14 @@
+{% if field_name in options.sort_permissions %}
+	<a href="{{ url }}" class="skeleton-pager-header-link">
+		{{ header }}
+		{% if pager.get_sort() == field_name %}
+			{% if pager.get_direction() == 'asc' %}
+				<span style="font-weight:bold; font-size:18px;">&uarr;</span>
+			{% else %}
+				<span style="font-weight:bold; font-size:18px;">&darr;</span>
+			{% endif %}
+		{% endif %}
+	</a>
+{% else %}
+	{{ header }}
+{% endif %}
