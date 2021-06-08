@@ -65,6 +65,15 @@ class Pager {
 		if ($classname === null) {
 			throw new \Exception('You must provide a classname');
 		}
+		if (!class_exists($classname)) {
+			throw new \Exception('Pager creation for class ' . $classname . ' failed: Unknow classname');
+		}
+		if (!is_callable([$classname, 'get_paged'])) {
+			throw new \Exception('Pager create for class ' . $classname . ' failed: method get_paged() is no callable');
+		}
+		if (!is_callable([$classname, 'count'])) {
+			throw new \Exception('Pager create for class ' . $classname . ' failed: method count() is no callable');
+		}
 
 		$this->classname = $classname;
 	}
