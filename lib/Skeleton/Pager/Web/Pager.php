@@ -273,8 +273,9 @@ class Pager extends \Skeleton\Pager\Pager {
 		}
 
 		$request_uri = str_replace('?' . $_SERVER['QUERY_STRING'], '', $_SERVER['REQUEST_URI']);
+
 		if (isset($application->config->base_uri) AND strpos($request_uri, $application->config->base_uri) === 0) {
-			$url = substr($request_uri, strlen($application->config->base_uri));
+			$url = '/' . substr($request_uri, strlen($application->config->base_uri));
 		} else {
 			$url = $request_uri;
 		}
