@@ -1,7 +1,6 @@
 <?php
 /**
- * Output class
- * Abstract Output class for Pager
+ * Csv class
  *
  * @author Christophe Gosiau <christophe@tigron.be>
  * @author Gerry Demaret <gerry@tigron.be>
@@ -10,18 +9,6 @@
 namespace Skeleton\Pager\Output;
 
 class Csv extends \Skeleton\Pager\Output {
-
-	/**
-	 * Output
-	 *
-	 * @access public
-	 * @return string $csv
-	 */
-	public function output() {
-		$arguments = func_get_args();
-		$file = call_user_func_array( [$this, 'get_file'], $arguments);
-		$file->client_download();
-	}
 
 	/**
 	 * Get file
@@ -61,7 +48,7 @@ class Csv extends \Skeleton\Pager\Output {
 
 		$content = $this->output_array($headers, $result);
 
-		$file = \Skeleton\File\File::store($this->pager->get_classname() . '.csv', $content);
+		$file = \Skeleton\File\File::store($this->filename . '.csv', $content);
 		return $file;
 	}
 

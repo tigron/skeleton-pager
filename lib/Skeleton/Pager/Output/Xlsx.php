@@ -10,18 +10,6 @@ namespace Skeleton\Pager\Output;
 class Xlsx extends \Skeleton\Pager\Output {
 
 	/**
-	 * Output
-	 *
-	 * @access public
-	 * @return string $csv
-	 */
-	public function output() {
-		$arguments = func_get_args();
-		$file = call_user_func_array([ $this, 'get_file'], $arguments);
-		$file->client_download();
-	}
-
-	/**
 	 * Get file
 	 *
 	 * @access public
@@ -59,7 +47,7 @@ class Xlsx extends \Skeleton\Pager\Output {
 		}
 
 		$content = $this->output_array($headers, $result);
-		$file = \Skeleton\File\File::store($this->pager->get_classname() . '.xlsx', $content);
+		$file = \Skeleton\File\File::store($this->filename . '.xlsx', $content);
 		return $file;
 	}
 

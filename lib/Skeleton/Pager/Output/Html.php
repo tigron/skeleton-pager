@@ -22,7 +22,7 @@ class Html extends \Skeleton\Pager\Output {
 		if (count($arguments) == 1) {
 			$headers = $arguments[0];
 			$fields = $arguments[0];
-		} elseif (count($arguments == 2)) {
+		} elseif (count($arguments) == 2) {
 			$headers = $arguments[0];
 			$fields = $arguments[1];
 			if (count($headers) != count($fields)) {
@@ -56,6 +56,20 @@ class Html extends \Skeleton\Pager\Output {
 		}
 		echo("	</tbody>\n");
 		echo("</table>\n");
+	}
+
+	/**
+	 * Save
+	 *
+	 * @access public
+	 * @return File
+	 */
+	public function save() {
+		$arguments = func_get_args();
+		ob_start();
+		call_user_func_array([ $this, 'output' ], $arguments);
+		$content = ob_get_clean();
+		return \Skeleton\File\File::store($this->filename . '.html', $content);
 	}
 
 	/**
