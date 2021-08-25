@@ -35,7 +35,7 @@ class Xlsx extends \Skeleton\Pager\Output {
 		if (count($arguments) == 1) {
 			$headers = $arguments[0];
 			$fields = $arguments[0];
-		} elseif (count($arguments == 2)) {
+		} elseif (count($arguments) == 2) {
 			$headers = $arguments[0];
 			$fields = $arguments[1];
 			if (count($headers) != count($fields)) {
