@@ -242,6 +242,28 @@ class Pager {
 	}
 
 	/**
+	 * Add join
+	 *
+	 * @access public
+	 * @param string $remote_table
+	 * @param string $remote_id
+	 * @param string $local_field
+	 * @param array $extra_join_conditions
+	 * @return bool
+	 */
+	public function has_join($remote_table, $remote_id, $local_field, $extra_conditions = []) {
+		if (isset($this->options['joins']) == false) {
+			return false;
+		}
+		foreach ($this->options['joins'] as $join) {
+			if ($join->get_remote_table() == $remote_table && $join->get_remote_id() == $remote_id && $join->get_local_field() == $local_field) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Activate 'Jump to page'
 	 *
 	 * @access public
