@@ -18,7 +18,9 @@ class Csv extends \Skeleton\Pager\Output {
 	 */
 	public function get_file() {
 		$arguments = func_get_args();
-		$this->pager->page();
+		if ($this->pager->item_count == 0) {
+			$this->pager->page();
+		}
 		$result = [];
 
 		if (count($arguments) == 1) {

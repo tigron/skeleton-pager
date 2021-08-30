@@ -17,6 +17,9 @@ class Html extends \Skeleton\Pager\Output {
 	 */
 	public function output() {
 		$arguments = func_get_args();
+		if ($this->pager->item_count == 0) {
+			$this->pager->page();
+		}
 		$result = [];
 
 		if (count($arguments) == 1) {
