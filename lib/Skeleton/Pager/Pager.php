@@ -148,6 +148,16 @@ class Pager {
 	}
 
 	/**
+	 * Get page
+	 *
+	 * @access public
+	 * @return int $page
+	 */
+	public function get_page() {
+		return $this->options['page'];
+	}
+
+	/**
 	 * Add condition
 	 *
 	 * @access public
