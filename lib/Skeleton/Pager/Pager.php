@@ -384,7 +384,14 @@ class Pager {
 			$options = json_decode($data, true);
 		} else {
 			$options = [
-				'conditions' => []
+				'conditions' => [],
+				'sort' => null,
+				'direction' => 'asc',
+				'page' => 1,
+				'jump_to' => true,
+				'joins' => [],
+				'sort_permissions' => [],
+				'classname' => null,
 			];
 		}
 
