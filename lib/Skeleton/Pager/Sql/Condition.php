@@ -95,7 +95,7 @@ class Condition {
 		$db = Database::get();
 		if ($this->comparison == 'IN') {
 			if (is_array($this->value)) {
-				$list = implode($db->quote($this->value), ', ');
+				$list = implode(', ', $db->quote($this->value));
 			} else {
 				$list = $this->value;
 			}
