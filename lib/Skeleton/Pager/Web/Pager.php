@@ -119,11 +119,10 @@ class Pager extends \Skeleton\Pager\Pager {
 
 		$str_links = '';
 		$links = [];
-		if ($this->options['page'] > 1) {
-			$links[] = [
-				'page' => 'previous'
-			];
-		}
+
+		$links[] = [
+			'page' => 'previous'
+		];
 
 		for ($i = 1; $i <= $pages; $i++) {
 			$print = false;
@@ -156,11 +155,9 @@ class Pager extends \Skeleton\Pager\Pager {
 			}
 		}
 
-		if ($this->options['page'] < $pages) {
-			$links[] = [
-				'page' => 'next'
-			];
-		}
+		$links[] = [
+			'page' => 'next'
+		];
 
 		foreach ($links as $key => $link) {
 			$link['active'] = false;
@@ -174,6 +171,7 @@ class Pager extends \Skeleton\Pager\Pager {
 			$qry_str = $_SERVER['QUERY_STRING'];
 		}
 		parse_str($qry_str, $qry_str_parts);
+
 
 		foreach ($links as $key => $link) {
 

@@ -1,7 +1,18 @@
 <nav aria-label="Search results">
 	<ul class="pagination" id="pager-{{ classname|replace({'_': '-'}) }}">
 	{% for link in links %}
-		<li class="page-item {% if link.active %}active{% endif %}">
+		{% set disabled = false %}
+
+		<!-- if previous link and first page is active -->
+		{% if link.page == 'previous' and links.1.active %}
+			{% set disabled = true %}
+		{% endif %}
+
+		<!-- if next link and last page is active -->
+		{% if link.page == 'next' and links[(links|length) - 2].active %}
+			{% set disabled = true %}
+		{% endif %}
+		<li class="page-item{% if link.active %} active{% endif %}{% if disabled %} disabled{% endif %}">
 			<a href="{{ link.url }}" class="skeleton-pager-link page-link">
 				{% if link.page == 'previous' %}
 					&laquo;
@@ -13,11 +24,11 @@
 			</a>
 		</li>
 		{% if loop.last and options.jump_to %}
-		<li class="page-item">
-			<span class="jump-to-page">
-				<input type="text" class="page-link" size="4" style="border: solid 1px #eee; text-align: center;"  placeholder="#" id="jump-to-page-{{ classname|replace({'_': '-'}) }}">
-			</span>
-		</li>
+			<li class="page-item">
+				<span class="jump-to-page">
+					<input type="text" class="page-link" size="4" style="border: solid 1px #eee; text-align: center;"  placeholder="#" id="jump-to-page-{{ classname|replace({'_': '-'}) }}">
+				</span>
+			</li>
 		{% endif %}
 	{% endfor %}
 	</ul>
