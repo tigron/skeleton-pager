@@ -30,6 +30,16 @@ class Config {
 	public static $sticky_pager = false;
 
 	/**
+	 * Jump to
+	 *
+	 * Enables jump_to input field
+	 *
+	 * @access public
+	 * @var bool $jump_to
+	 */
+	public static $jump_to = true;
+
+	/**
 	 * Links template
 	 *
 	 * Set the template to render the page links

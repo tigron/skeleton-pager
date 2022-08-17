@@ -26,7 +26,6 @@ class Pager {
 		'sort' => null,
 		'direction' => 'asc',
 		'page' => 1,
-		'jump_to' => true,
 		'joins' => [],
 		'sort_permissions' => [],
 	];
@@ -76,6 +75,7 @@ class Pager {
 		}
 
 		$this->classname = $classname;
+		$this->set_jump_to(Config::$jump_to);
 	}
 
 	/**
@@ -388,7 +388,7 @@ class Pager {
 				'sort' => null,
 				'direction' => 'asc',
 				'page' => 1,
-				'jump_to' => true,
+				'jump_to' => Config::$jump_to,
 				'joins' => [],
 				'sort_permissions' => [],
 				'classname' => null,
