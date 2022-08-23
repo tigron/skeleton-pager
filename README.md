@@ -28,7 +28,7 @@ Installation via composer:
 	}
 
 	$pager->add_condition('field1', '=', 1);
-	$pager->add_condition('field2', 'IN', [ 1, 2, 3]);
+	$pager->add_condition('field2', 'IN', [ 1, 2, 3, null]);
 
 	$condition = new \Skeleton\Pager\Sql\Condition('my_other_field', '>', '0);
 	$pager->add_join('remote_table', remote_id', 'local_field', $condition);

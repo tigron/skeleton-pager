@@ -94,17 +94,36 @@ class Condition {
 	public function __toString() {
 		$db = Database::get();
 		if ($this->comparison == 'IN') {
-			if (is_array($this->value)) {
-				$list = implode(', ', $db->quote($this->value));
-			} else {
-				$list = $this->value;
+			if (!is_array($this->value)) {
+				throw new \Exception('Error in condition: the IN value specified for ' . $this->local_field . ' must be an array');
 			}
 
-			if (strlen($list) == 0) {
-				return '1 = 2' . "\n\t";
-			} else {
-				return $db->quote_identifier($this->local_field) . ' IN (' . $list . ')' . "\n\t";
+			/**
+			 * If there is a NULL value, it cannot be passed to Mysql in the
+			 * same IN statement. A seperate comparison needs to be added
+			 */
+			$non_null = [];
+			$null = [];
+
+			foreach ($this->value as $value) {
+				if ($value === null) {
+					$null[] = $value;
+				} else {
+					$non_null[] = $value;
+				}
 			}
+
+			$condition = '( ';
+			if (count($non_null) > 0 ) {
+				$list = implode(', ', $db->quote($non_null));
+				$condition .= $db->quote_identifier($this->local_field) . ' IN (' . $list . ')';
+			}
+			if (count($null) > 0) {
+				$condition .= ' OR ' . $db->quote_identifier($this->local_field) . ' IS NULL )';
+			}
+			$condition .= ') ';
+
+			return $condition;
 		} elseif ($this->comparison == 'BETWEEN') {
 			return $db->quote_identifier($this->local_field) . ' BETWEEN ' . $db->quote($this->value[0]) . ' AND ' . $db->quote($this->value[1]) . "\n\t";
 		} elseif (is_array($this->value)) {
