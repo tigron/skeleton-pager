@@ -98,6 +98,10 @@ class Condition {
 				throw new \Exception('Error in condition: the IN value specified for ' . $this->local_field . ' must be an array');
 			}
 
+			if (empty($this->value) === true) {
+				return $db->quote_identifier($this->local_field) . ' IN (NULL)';
+			}
+
 			/**
 			 * If there is a NULL value, it cannot be passed to Mysql in the
 			 * same IN statement. A seperate comparison needs to be added
