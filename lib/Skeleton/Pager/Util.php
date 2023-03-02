@@ -24,6 +24,8 @@ class Util {
 	public static function object_sort($objects, $property, $direction = 'asc', $type = 'auto') {
 
 		usort($objects, function($a, $b) use ($property, $direction, $type) {
+			$property1 = null;
+			$property2 = null;
 			if (!is_object($property) AND isset($a->$property)) {
 				$property1 = $a->$property;
 				$property2 = $b->$property;
