@@ -54,7 +54,7 @@ trait Page {
 		$object = new \ReflectionClass(get_class());
 		if (is_callable($sort)) {
 			$sorter = 'object';
-		} elseif ($object->hasMethod($sort)) {
+		} elseif ($sort !== null && $object->hasMethod($sort)) {
 			$sorter = 'object';
 		} else {
 			$sorter = 'db';
@@ -124,8 +124,11 @@ trait Page {
 				}
 			}
 		}
-		$sort_condition_table = substr($sort, 0, strpos($sort, '.'));
-		$condition_joins[$sort_condition_table] = $sort_condition_table;
+
+		if ($sort !== null) {
+			$sort_condition_table = substr($sort, 0, strpos($sort, '.'));
+			$condition_joins[$sort_condition_table] = $sort_condition_table;
+		}
 
 		do {
 			$remove_count = 0;
