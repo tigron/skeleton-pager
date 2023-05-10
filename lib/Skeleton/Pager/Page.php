@@ -292,6 +292,7 @@ trait Page {
 				case 'double':
 				case 'mediumint':
 				case 'int':
+				case 'bigint':
 					$definitions[$key]['simple_type'] = 'number';
 					break;
 			}

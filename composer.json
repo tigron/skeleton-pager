@@ -12,6 +12,9 @@
             "email": "support@tigron.be"
         }
     ],
+    "require" : {
+		"tigron/skeleton-core": ">=4"
+    },
     "support": {
         "source": "https://github.com/tigron/skeleton-pager",
         "issues": "https://github.com/tigron/skeleton-pager/issues"

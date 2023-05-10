@@ -54,7 +54,7 @@ class Pager extends \Skeleton\Pager\Pager {
 
 		$url = self::find_page_uri() . '?' . http_build_query($qry_str_parts);
 
-		$template = \Skeleton\Core\Web\Template::get();
+		$template = \Skeleton\Application\Web\Template::get();
 		$template->assign('url', $url);
 		$template->assign('options', $this->options);
 		$template->assign('field_name', $field_name);
@@ -200,7 +200,7 @@ class Pager extends \Skeleton\Pager\Pager {
 			$links[$key] = $link;
 		}
 
-		$template = \Skeleton\Core\Web\Template::get();
+		$template = \Skeleton\Application\Web\Template::get();
 		$template->assign('links', $links);
 		$template->assign('classname', $this->classname);
 		$template->assign('options', $this->options);
