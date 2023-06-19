@@ -12,7 +12,7 @@
 		{% set disabled = true %}
 	{% endif %}
 	<li class="{% if link.active %}active{% endif %}{% if disabled %} disabled{% endif %}">
-		<a href="{{ link.url }}" class="skeleton-pager-link">
+		<a{% if disabled == false %} href="{{ link.url }}"{% endif %} class="skeleton-pager-link">
 			{% if link.page == 'previous' %}
 				&laquo;
 			{% elseif link.page == 'next' %}
