@@ -28,6 +28,7 @@ class Pager {
 		'page' => 1,
 		'joins' => [],
 		'sort_permissions' => [],
+		'conditions_restrictions' => [],
 	];
 
 	/**
@@ -184,6 +185,19 @@ class Pager {
 		$conditions[$field][] = $condition;
 
 		$this->options['conditions'] = $conditions;
+	}
+
+	/**
+	 * Add condition restriction
+	 *
+	 * @access public
+	 * @param string $field
+	 * @param string $comparison (optional)
+	 * @param string $value
+	 */
+	public function add_condition_restriction($field, $comparison, $params) {
+		$field = $this->expand_field_name($field);
+		$this->options['conditions_restrictions'][] = new Condition($field, $comparison, $params);
 	}
 
 	/**
@@ -507,6 +521,21 @@ class Pager {
 		// Check if we are allowed to sort at all
 		if ($this->options['sort'] != null AND !is_callable($this->options['sort']) AND !in_array($this->options['sort'], $this->options['sort_permissions'])) {
 			throw new \Exception('Sorting not allowed for field ' . $this->options['sort']);
+		}
+
+		// Check if all the condition restrictions are fulfulled
+		foreach ($this->options['conditions_restrictions'] as $condition_restriction) {
+			$found = false;
+			foreach ($this->get_conditions() as $condition) {
+				$condition = array_shift($condition);
+				if ($condition->equals($condition_restriction)) {
+					$found = true;
+					break;
+				}
+			}
+			if ($found === false) {
+				throw new \Exception('Permission denied');
+			}
 		}
 
 		$sort = $this->options['sort'];
