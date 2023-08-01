@@ -524,17 +524,19 @@ class Pager {
 		}
 
 		// Check if all the condition restrictions are fulfulled
-		foreach ($this->options['conditions_restrictions'] as $condition_restriction) {
-			$found = false;
-			foreach ($this->get_conditions() as $condition) {
-				$condition = array_shift($condition);
-				if ($condition->equals($condition_restriction)) {
-					$found = true;
-					break;
+		if (isset($this->options['conditions_restrictions'])) {
+			foreach ($this->options['conditions_restrictions'] as $condition_restriction) {
+				$found = false;
+				foreach ($this->get_conditions() as $condition) {
+					$condition = array_shift($condition);
+					if ($condition->equals($condition_restriction)) {
+						$found = true;
+						break;
+					}
 				}
-			}
-			if ($found === false) {
-				throw new \Exception('Permission denied');
+				if ($found === false) {
+					throw new \Exception('Permission denied');
+				}
 			}
 		}
 
