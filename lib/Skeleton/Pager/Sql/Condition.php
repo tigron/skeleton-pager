@@ -93,13 +93,17 @@ class Condition {
 	 */
 	public function __toString() {
 		$db = Database::get();
-		if ($this->comparison == 'IN') {
+		if ($this->comparison == 'IN' || $this->comparison == 'NOT IN') {
+			$not = '';
+			if ($this->comparison == 'NOT IN') {
+				$not = 'NOT ';
+			}
 			if (!is_array($this->value)) {
-				throw new \Exception('Error in condition: the IN value specified for ' . $this->local_field . ' must be an array');
+				throw new \Exception('Error in condition: the ' . $not . 'IN value specified for ' . $this->local_field . ' must be an array');
 			}
 
 			if (empty($this->value) === true) {
-				return $db->quote_identifier($this->local_field) . ' IN (NULL)';
+				return $db->quote_identifier($this->local_field) . ' ' . $not . 'IN (NULL)';
 			}
 
 			/**
@@ -120,10 +124,10 @@ class Condition {
 			$condition = '( ';
 			if (count($non_null) > 0 ) {
 				$list = implode(', ', $db->quote($non_null));
-				$condition .= $db->quote_identifier($this->local_field) . ' IN (' . $list . ')';
+				$condition .= $db->quote_identifier($this->local_field) . ' ' . $not . 'IN (' . $list . ')';
 			}
 			if (count($null) > 0) {
-				$condition .= ' OR ' . $db->quote_identifier($this->local_field) . ' IS NULL )';
+				$condition .= ' OR ' . $db->quote_identifier($this->local_field) . ' IS ' . $not . 'NULL )';
 			}
 			$condition .= ') ';
 
