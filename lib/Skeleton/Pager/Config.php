@@ -50,6 +50,16 @@ class Config {
 	public static $links_template = '@skeleton-pager\bootstrap3\links.twig';
 
 	/**
+	 * Per page switch template
+	 *
+	 * Set the template to render the per page switch
+	 *
+	 * @access public
+	 * @var string $per_page_template
+	 */
+	public static $per_page_template = '@skeleton-pager\bootstrap3\per_page.twig';
+
+	/**
 	 * header template
 	 *
 	 * Set the template to render the page header

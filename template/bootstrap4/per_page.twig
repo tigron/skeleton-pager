@@ -1,0 +1,12 @@
+<div class="dropdown per-page">
+	<button class="btn dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+		{{ options.per_page }}
+	</button>
+	<div class="dropdown-menu">
+		{% for per_page_link in per_page_links %}
+			<a class="dropdown-item" {% if per_page_link.per_page == options.per_page %}disabled{% endif %} href="{{ per_page_link.url }}">
+				{{ per_page_link.per_page }}
+			</a>
+		{% endfor %}
+	</div>
+</div>
