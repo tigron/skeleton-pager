@@ -42,7 +42,7 @@ Installation via composer:
 	 */
 	\Skeleton\Pager\Config::$items_per_page = 20;
 
-    /**
+	/**
 	 * Per page list
 	 */
 	\Skeleton\Pager\Config::$per_page_list = [20, 50, 100];
