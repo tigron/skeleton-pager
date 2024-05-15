@@ -20,6 +20,14 @@ class Config {
 	public static $items_per_page = 20;
 
 	/**
+	 * Per page list
+	 *
+	 * @access public
+	 * @var array $per_page_list
+	 */
+	public static $per_page_list = [20, 50, 100];
+
+	/**
 	 * Sticky pager
 	 *
 	 * Remember pager when navigating away and back to the module

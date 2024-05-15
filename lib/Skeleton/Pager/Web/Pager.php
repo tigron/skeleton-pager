@@ -241,7 +241,7 @@ class Pager extends \Skeleton\Pager\Pager {
 
 		// list of items per page
 		$per_page_links = [];
-		foreach ([20, 50, 100] as $per_page) {
+		foreach (Config::$per_page_list as $per_page) {
 			$hash = $this->create_options_hash(
 				$this->options['conditions'],
 				1,
