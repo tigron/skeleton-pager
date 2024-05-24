@@ -21,6 +21,14 @@ class Condition {
 	private $local_field = '';
 
 	/**
+	 * Local function
+	 *
+	 * @access private
+	 * @var $local_function
+	 */
+	private $local_function = '';
+
+	/**
 	 * Vakue
 	 *
 	 * @access private
@@ -46,12 +54,55 @@ class Condition {
 	 */
 	public function __construct($local_field, $comparison, $value) {
 		$this->local_field = $local_field;
+		if ($this->validate() === false) {
+			throw new \Exception("Unsupported MySQL function: '" . $this->local_field . "'");
+		}
+
 		$this->comparison = $comparison;
 		if (!is_array($value)) {
 			$this->value = [ $value ];
 		} else {
 			$this->value = $value;
 		}
+	}
+
+	/**
+	 * Validate
+	 *
+	 * @access public
+	 * @return bool
+	 */
+	public function validate() {
+		$pattern = "/^(TIME|DATE|MAX|MIN|AVG|SUM)\(([^)]+)\)$|^[^\s()]+$/";
+		if (preg_match($pattern, $this->local_field, $matches)) {
+			if (isset($matches[1]) === true) {
+				$this->set_local_function($matches[1]);
+				$this->set_local_field($matches[2]);
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Set local_function
+	 *
+	 * @access public
+	 */
+	public function set_local_function($local_function) {
+		$this->local_function = $local_function;
+	}
+
+	/**
+	 * Set local_field
+	 *
+	 * @access public
+	 * @return string $local_field
+	 */
+	public function set_local_field($local_field) {
+		$this->local_field = $local_field;
 	}
 
 	/**
@@ -93,6 +144,11 @@ class Condition {
 	 */
 	public function __toString() {
 		$db = Database::get();
+		$local_field = $db->quote_identifier($this->local_field);
+		if (empty($this->local_function) === false) {
+			$local_field = $this->local_function . '(' . $local_field . ')';
+		}
+
 		if ($this->comparison == 'IN' || $this->comparison == 'NOT IN') {
 			$not = '';
 			if ($this->comparison == 'NOT IN') {
@@ -103,7 +159,7 @@ class Condition {
 			}
 
 			if (empty($this->value) === true) {
-				return $db->quote_identifier($this->local_field) . ' ' . $not . 'IN (NULL)';
+				return $local_field . ' ' . $not . 'IN (NULL)';
 			}
 
 			/**
@@ -124,25 +180,25 @@ class Condition {
 			$condition = '( ';
 			if (count($non_null) > 0 ) {
 				$list = implode(', ', $db->quote($non_null));
-				$condition .= $db->quote_identifier($this->local_field) . ' ' . $not . 'IN (' . $list . ')';
+				$condition .= $local_field . ' ' . $not . 'IN (' . $list . ')';
 			}
 			if (count($null) > 0) {
-				$condition .= ' OR ' . $db->quote_identifier($this->local_field) . ' IS ' . $not . 'NULL )';
+				$condition .= ' OR ' . $local_field . ' IS ' . $not . 'NULL )';
 			}
 			$condition .= ') ';
 
 			return $condition;
 		} elseif ($this->comparison == 'BETWEEN') {
-			return $db->quote_identifier($this->local_field) . ' BETWEEN ' . $db->quote($this->value[0]) . ' AND ' . $db->quote($this->value[1]) . "\n\t";
+			return $local_field . ' BETWEEN ' . $db->quote($this->value[0]) . ' AND ' . $db->quote($this->value[1]) . "\n\t";
 		} elseif (is_array($this->value)) {
 			$where = '(0';
 			foreach ($this->value as $field) {
-				$where .= ' OR ' . $db->quote_identifier($this->local_field) . ' ' . $this->comparison . ' ' . $db->quote($field);
+				$where .= ' OR ' . $local_field . ' ' . $this->comparison . ' ' . $db->quote($field);
 			}
 			$where .= ') ';
 			return $where;
 		} else {
-			return $db->quote_identifier($this->local_field) . ' ' . $this->comparison . ' ' . $db->quote($this->value) . ' ' . "\n\t";
+			return $local_field . ' ' . $this->comparison . ' ' . $db->quote($this->value) . ' ' . "\n\t";
 		}
 	}
 
