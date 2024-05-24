@@ -26,7 +26,7 @@ trait Page {
 	 * @param array $extra_conditions
 	 * @param array $extra_joins
 	 */
-	public static function get_paged($sort = null, $direction = 'asc', $page = 1, $extra_conditions = [], $all = false, $extra_joins = []) {
+	public static function get_paged($sort = null, $direction = 'asc', $page = 1, $extra_conditions = [], $all = false, $extra_joins = [], $per_page = null) {
 		$db = self::trait_get_database();
 		$table = self::trait_get_database_table();
 		$field_id = self::trait_get_table_field_id();
@@ -73,7 +73,11 @@ trait Page {
 		}
 
 		if (!$all) {
-			$limit = Config::$items_per_page;
+			if ($per_page === null) {
+				$limit = Config::$items_per_page;
+			} else {
+				$limit = $per_page;
+			}
 		} else {
 			$limit = 1000;
 		}

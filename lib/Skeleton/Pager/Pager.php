@@ -77,6 +77,7 @@ class Pager {
 
 		$this->classname = $classname;
 		$this->set_jump_to(Config::$jump_to);
+		$this->set_per_page(Config::$items_per_page);
 	}
 
 	/**
@@ -308,6 +309,26 @@ class Pager {
 	}
 
 	/**
+	 * Set 'per page items'
+	 *
+	 * @access public
+	 * @param int $per_page
+	 */
+	public function set_per_page($per_page) {
+		$this->options['per_page'] = $per_page;
+	}
+
+	/**
+	 * Get per page
+	 *
+	 * @access public
+	 * @return bool $jump_to
+	 */
+	public function get_per_page() {
+		return $this->options['per_page'];
+	}
+
+	/**
 	 * Set a search
 	 *
 	 * @access public
@@ -406,6 +427,7 @@ class Pager {
 				'joins' => [],
 				'sort_permissions' => [],
 				'classname' => null,
+				'per_page' => Config::$items_per_page,
 			];
 		}
 
@@ -445,7 +467,7 @@ class Pager {
 	 * @param int $sort
 	 * @param string $direction
 	 */
-	public function create_options_hash($conditions = null, $page = null, $sort = null, $direction = null) {
+	public function create_options_hash($conditions = null, $page = null, $sort = null, $direction = null, $joins = null, $per_page = null) {
 		if ($conditions === null) {
 			$conditions = $this->options['conditions'];
 		}
@@ -460,6 +482,10 @@ class Pager {
 
 		if ($direction === null) {
 			$direction = $this->options['direction'];
+		}
+
+		if ($per_page === null) {
+			$per_page = $this->options['per_page'];
 		}
 
 		if (is_array($conditions)) {
@@ -499,6 +525,7 @@ class Pager {
 			'sort' => $sort,
 			'direction' => $direction,
 			'joins' => $joins,
+			'per_page' => $per_page,
 		];
 
 		$data = json_encode($options);
@@ -550,7 +577,8 @@ class Pager {
 			$this->options['page'],
 			$this->options['conditions'],
 			$this->options['all'],
-			$this->options['joins']
+			$this->options['joins'],
+			$this->options['per_page']
 		];
 
 		$this->items = call_user_func_array([$this->classname, 'get_paged'], $params);

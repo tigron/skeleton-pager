@@ -20,6 +20,14 @@ class Config {
 	public static $items_per_page = 20;
 
 	/**
+	 * Per page list
+	 *
+	 * @access public
+	 * @var array $per_page_list
+	 */
+	public static $per_page_list = [20, 50, 100];
+
+	/**
 	 * Sticky pager
 	 *
 	 * Remember pager when navigating away and back to the module
@@ -48,6 +56,16 @@ class Config {
 	 * @var string $links_template
 	 */
 	public static $links_template = '@skeleton-pager\bootstrap3\links.twig';
+
+	/**
+	 * Per page switch template
+	 *
+	 * Set the template to render the per page switch
+	 *
+	 * @access public
+	 * @var string $per_page_template
+	 */
+	public static $per_page_template = '@skeleton-pager\bootstrap3\per_page.twig';
 
 	/**
 	 * header template

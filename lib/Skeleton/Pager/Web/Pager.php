@@ -24,6 +24,14 @@ class Pager extends \Skeleton\Pager\Pager {
 	public $links;
 
 	/**
+	 * Per page link: a html string with per page links
+	 *
+	 * @access public
+	 * @var string $per_page_links
+	 */
+	public $per_page_links;
+
+	/**
 	 * Create the header cells of the paged table
 	 *
 	 * @param string $header Name of the header
@@ -91,6 +99,7 @@ class Pager extends \Skeleton\Pager\Pager {
 
 		parent::page($all);
 		$this->generate_links();
+		$this->generate_per_page_links();
 		$hash = $this->create_options_hash($this->options['conditions'], $this->options['page'], $this->options['sort'], $this->options['direction'], $this->options['joins']);
 
 		if (Config::$sticky_pager) {
@@ -104,7 +113,7 @@ class Pager extends \Skeleton\Pager\Pager {
 	 * @access private
 	 */
 	private function generate_links() {
-		$items_per_page = Config::$items_per_page;
+		$items_per_page = $this->options['per_page'];
 		if ($items_per_page == 0) {
 			$pages = 0;
 		} else {
@@ -117,7 +126,6 @@ class Pager extends \Skeleton\Pager\Pager {
 			return;
 		}
 
-		$str_links = '';
 		$links = [];
 
 		$links[] = [
@@ -164,8 +172,6 @@ class Pager extends \Skeleton\Pager\Pager {
 			$links[$key] = $link;
 		}
 
-
-
 		$qry_str = '';
 		if (isset($_SERVER['QUERY_STRING'])) {
 			$qry_str = $_SERVER['QUERY_STRING'];
@@ -206,6 +212,64 @@ class Pager extends \Skeleton\Pager\Pager {
 		$template->assign('options', $this->options);
 		$output = $template->render(\Skeleton\Pager\Config::$links_template, false);
 		$this->links = $output;
+	}
+
+	/**
+	 * Generate the necessary per page links to change the amount of items per page
+	 *
+	 * @access private
+	 */
+	private function generate_per_page_links() {
+		$items_per_page = $this->options['per_page'];
+		if ($items_per_page == 0) {
+			$pages = 0;
+		} else {
+			$pages = ceil($this->item_count / $items_per_page);
+		}
+
+		// Don't make links if there is only one page and the items per page is 20
+		if ($pages == 1 && $items_per_page === 20) {
+			$this->per_page_links = '';
+			return;
+		}
+
+		$qry_str = '';
+		if (isset($_SERVER['QUERY_STRING'])) {
+			$qry_str = $_SERVER['QUERY_STRING'];
+		}
+		parse_str($qry_str, $qry_str_parts);
+
+		// list of items per page
+		$per_page_links = [];
+		foreach (Config::$per_page_list as $per_page) {
+			$hash = $this->create_options_hash(
+				$this->options['conditions'],
+				1,
+				$this->options['sort'],
+				$this->options['direction'],
+				$this->options['joins'],
+				$per_page
+			);
+
+			$qry_str_parts['q'] = $hash;
+			if (isset($qry_str_parts['per_page']) === true) {
+				unset($qry_str_parts['per_page']);
+			}
+
+			$url = self::find_page_uri() . '?' . http_build_query($qry_str_parts);
+			$per_page_links[] = [
+				'per_page' => $per_page,
+				'url' => $url,
+				'hash' => $hash
+			];
+		}
+
+		$template = \Skeleton\Application\Web\Template::get();
+		$template->assign('per_page_links', $per_page_links);
+		$template->assign('classname', $this->classname);
+		$template->assign('options', $this->options);
+		$output = $template->render(\Skeleton\Pager\Config::$per_page_template, false);
+		$this->per_page_links = $output;
 	}
 
 	/**

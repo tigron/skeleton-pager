@@ -1,0 +1,15 @@
+<div class="dropdown per-page">
+	<button class="btn dropdown-toggle" type="button" id="per-page-{{ classname|replace({'_': '-'}) }}" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+		{{ options.per_page }}
+		<span class="caret"></span>
+	</button>
+	<ul class="dropdown-menu" aria-labelledby="per-page-{{ classname|replace({'_': '-'}) }}">
+		{% for per_page_link in per_page_links %}
+			<li{% if per_page_link.per_page == options.per_page %} class="disabled"{% endif %}>
+				<a href="{{ per_page_link.url }}">
+					{{ per_page_link.per_page }}
+				</a>
+			</li>
+		{% endfor %}
+	</ul>
+</div>
