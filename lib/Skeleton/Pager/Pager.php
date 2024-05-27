@@ -417,6 +417,10 @@ class Pager {
 		$data = @gzdecode(base64_decode(rawurldecode($hash)));
 		if ($data !== false) {
 			$options = json_decode($data, true);
+			//support for old hashes
+			if (isset($options['per_page']) === false) {
+				$options['per_page'] = Config::$items_per_page;
+			}
 		} else {
 			$options = [
 				'conditions' => [],
