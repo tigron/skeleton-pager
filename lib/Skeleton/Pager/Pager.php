@@ -587,6 +587,14 @@ class Pager {
 
 		$this->items = call_user_func_array([$this->classname, 'get_paged'], $params);
 		$this->item_count = call_user_func_array([$this->classname, 'count'], [$this->options['conditions'], $this->options['joins']]);
+
+		// The requested page is empty, so we have probably passed the last item
+		// page to the last page instead
+		if (count($this->items) === 0 && $this->item_count > 0) {
+			$this->options['page'] = ceil($this->item_count / $this->options['per_page']);
+			$params[2] = $this->options['page'];
+			$this->items = call_user_func_array([$this->classname, 'get_paged'], $params);
+		}
 	}
 
 	/**
