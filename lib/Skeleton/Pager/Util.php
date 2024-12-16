@@ -45,8 +45,10 @@ class Util {
 				}
 			}
 
-			if (is_numeric($property1) AND is_numeric($property2) AND $type == 'auto') {
+			if (is_numeric($property1) && is_numeric($property2) && $type == 'auto') {
 				$type = 'int';
+			} elseif (is_string($property1) && is_string($property2) && $type == 'auto') {
+				$type = 'string';
 			}
 
 			if ($type == 'string') {
