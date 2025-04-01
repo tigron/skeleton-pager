@@ -73,7 +73,7 @@ class Condition {
 	 * @return bool
 	 */
 	public function validate() {
-		$pattern = "/^(TIME|DATE|MAX|MIN|AVG|SUM)\(([^)]+)\)$|^[^\s()]+$/";
+		$pattern = "/^(TIME|DATE|MAX|MIN|AVG|SUM|WEEKDAY)\(([^)]+)\)$|^[^\s()]+$/";
 		if (preg_match($pattern, $this->local_field, $matches)) {
 			if (isset($matches[1]) === true) {
 				$this->set_local_function($matches[1]);
