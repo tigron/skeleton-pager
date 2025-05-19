@@ -92,8 +92,8 @@ trait Page {
 
 		$sql = 'SELECT DISTINCT ' . $db->quote_identifier($table) . '.' . $db->quote_identifier(self::trait_get_table_field_id()) . ' as id ';
 
-		// PostgreSQL requires the fields used in the ORDER BY clause to be in the SELECT list as well
-		if ($sorter == 'db' && $db->get_dbms() !== 'mysql') {
+		// PostgreSQL and more recent versions of MySQL require the fields used in the ORDER BY clause to be in the SELECT list as well
+		if ($sorter == 'db' && $sort !== $table . '.' . self::trait_get_table_field_id()) {
 			$sql .= ', ' . $sort . ' ';
 		}
 
