@@ -303,6 +303,12 @@ class Condition {
 					}
 				}
 				return false;
+			case 'IN':
+			case 'in':
+				if (in_array($value, $this->value) === true) {
+					return true;
+				}
+				return false;
 			default:
 				throw new \Exception("Unsupported comparison operator: '" . $this->comparison . "'");
 		}
