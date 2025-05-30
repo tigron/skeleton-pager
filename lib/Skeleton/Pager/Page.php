@@ -51,7 +51,7 @@ trait Page {
 			}
 		}
 
-		$object = new \ReflectionClass(get_class());
+		$object = new \ReflectionClass(self::class);
 		if (is_callable($sort)) {
 			$sorter = 'object';
 		} elseif ($sort !== null && $object->hasMethod($sort)) {
@@ -354,7 +354,7 @@ trait Page {
 
 		$where = '';
 
-		$object = new \ReflectionClass(get_class());
+		$object = new \ReflectionClass(self::class);
 
 		foreach ($extra_conditions as $key => $condition_array) {
 			if ($key == '%search%' OR is_callable($key) OR $object->hasMethod($key)) {
@@ -424,7 +424,7 @@ trait Page {
 					$where .= 'OR ' . $table . '.' . $field_id . ' IN ( ';
 					$where .= ' SELECT object_id FROM object_text ';
 					$where .= ' WHERE object_id=' . $table . '.' . $field_id;
-					$where .= ' AND object_text.classname LIKE "' . get_class() . '"';
+					$where .= ' AND object_text.classname LIKE "' . self::class . '"';
 					if (isset($extra_conditions['object_text.language_id'])) {
 						$where .= ' AND object_text.language_id=' . $extra_conditions['object_text.language_id'][0]->get_value();
 					}
@@ -465,7 +465,7 @@ trait Page {
 
 		// testing if db or object mode
 		$sorter = 'db';
-		$object = new \ReflectionClass(get_class());
+		$object = new \ReflectionClass(self::class);
 		foreach ($extra_conditions as $key => $extra_condition) {
 			foreach ($extra_conditions as $key => $extra_condition) {
 				if ($key == '%search%') {
