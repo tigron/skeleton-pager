@@ -112,7 +112,7 @@ class Pager extends \Skeleton\Pager\Pager {
 	 *
 	 * @access private
 	 */
-	private function generate_links() {
+	protected function generate_links() {
 		$items_per_page = $this->options['per_page'];
 		if ($items_per_page == 0) {
 			$pages = 0;
@@ -219,7 +219,7 @@ class Pager extends \Skeleton\Pager\Pager {
 	 *
 	 * @access private
 	 */
-	private function generate_per_page_links() {
+	protected function generate_per_page_links() {
 		$items_per_page = $this->options['per_page'];
 		if ($items_per_page == 0) {
 			$pages = 0;
