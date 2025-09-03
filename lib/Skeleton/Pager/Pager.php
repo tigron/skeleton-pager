@@ -627,8 +627,8 @@ class Pager {
 	 * @return Web_Pager $pager
 	 */
 	public static function get_by_options_hash($options_hash) {
-		$options = self::get_options_from_hash($options_hash);
-		$pager = new self($options['classname']);
+		$options = static::get_options_from_hash($options_hash);
+		$pager = new static($options['classname']);
 		$pager->options = $options;
 		return $pager;
 	}
