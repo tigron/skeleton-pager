@@ -258,7 +258,7 @@ class Condition {
 	 * @return bool
 	 */
 	public function evaluate($value) {
-		switch ($this->comparison) {
+		switch (strtolower($this->comparison)) {
 			case '':
 			case '=':
 				foreach ($this->value as $value_item) {
@@ -301,6 +301,16 @@ class Condition {
 					if ($value_item >= $value) {
 						return true;
 					}
+				}
+				return false;
+			case 'not in':
+				if (in_array($value, $this->value) === false) {
+					return true;
+				}
+				return false;
+			case 'in':
+				if (in_array($value, $this->value) === true) {
+					return true;
 				}
 				return false;
 			default:
