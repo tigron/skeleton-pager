@@ -94,7 +94,7 @@ trait Page {
 
 		// PostgreSQL and more recent versions of MySQL require the fields used in the ORDER BY clause to be in the SELECT list as well
 		if ($sorter == 'db' && $escaped_sort !== $db->quote_identifier($table) . '.' . $db->quote_identifier(self::trait_get_table_field_id())) {
-			$sql .= ', ' . $escaped_sort . ' ';
+			$sql .= ', ' . $escaped_sort . ' as sort_id ';
 		}
 
 		$sql .= "\n";
