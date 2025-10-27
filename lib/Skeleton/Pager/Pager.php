@@ -452,8 +452,11 @@ class Pager {
 
 		if (isset($options['joins']) and is_array($options['joins'])) {
 			$joins = [];
-			foreach ($options['joins'] as $join) {
-				$joins[] = new Join($join['remote_table'], $join['remote_id'], $join['local_field'], $join['conditions']);
+			foreach ($options['joins'] as $join_key => $join) {
+				$joins[$join_key] = new Join($join['remote_table'], $join['remote_id'], $join['local_field']);
+				foreach ($join['conditions'] as $condition) {
+					$joins[$join_key]->add_condition(new Condition($condition['local_field'], $condition['comparison'], $condition['value']));
+				}
 			}
 
 			$options['joins'] = $joins;
@@ -488,6 +491,10 @@ class Pager {
 			$direction = $this->options['direction'];
 		}
 
+		if ($joins === null) {
+			$joins = $this->options['joins'];
+		}
+
 		if ($per_page === null) {
 			$per_page = $this->options['per_page'];
 		}
@@ -512,13 +519,21 @@ class Pager {
 			$flat_conditions = $conditions;
 		}
 
-		$joins = [];
-		foreach ($this->options['joins'] as $join) {
-			$joins[] = [
+		$flat_joins = [];
+		foreach ($joins as $join) {
+			$extra_conditions = [];
+			foreach ($join->get_conditions() as $condition) {
+				$extra_conditions[] = [
+					'local_field' => $condition->get_local_field(),
+					'value' => $condition->get_value(),
+					'comparison' => $condition->get_comparison(),
+				];
+			}
+			$flat_joins[] = [
 				'remote_table' => $join->get_remote_table(),
 				'remote_id' => $join->get_remote_id(),
 				'local_field' => $join->get_local_field(),
-				'conditions' => $join->get_conditions(),
+				'conditions' => $extra_conditions,
 			];
 		}
 
@@ -528,7 +543,7 @@ class Pager {
 			'page' => $page,
 			'sort' => $sort,
 			'direction' => $direction,
-			'joins' => $joins,
+			'joins' => $flat_joins,
 			'per_page' => $per_page,
 		];
 
