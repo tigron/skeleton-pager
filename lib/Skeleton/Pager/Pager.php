@@ -442,7 +442,7 @@ class Pager {
 					if ($condition_key === '%search%') {
 						$conditions[$condition_key][$setting_key] = $setting;
 					} else {
-						$conditions[$condition_key][$setting_key] = new Condition($setting['local_field'], $setting['comparison'], $setting['value']);
+						$conditions[$condition_key][$setting_key] = new Condition($setting['local_field'], $setting['comparison'], $setting['value'], $setting['local_function']);
 					}
 				}
 			}
@@ -502,6 +502,7 @@ class Pager {
 					} else {
 						$flat_conditions[$condition_key][$setting_key] = [
 							'local_field' => $setting->get_local_field(),
+							'local_function' => $setting->get_local_function(),
 							'comparison' => $setting->get_comparison(),
 							'value' => $setting->get_value(),
 						];

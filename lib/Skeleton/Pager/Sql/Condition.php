@@ -51,8 +51,9 @@ class Condition {
 	 * @param string $local_field
 	 * @param string $comparison
 	 * @param string $value
+	 * @param string $local_function
 	 */
-	public function __construct($local_field, $comparison, $value) {
+	public function __construct($local_field, $comparison, $value, $local_function = null) {
 		$this->local_field = $local_field;
 		if ($this->validate() === false) {
 			throw new \Exception("Unsupported MySQL function: '" . $this->local_field . "'");
@@ -63,6 +64,9 @@ class Condition {
 			$this->value = [ $value ];
 		} else {
 			$this->value = $value;
+		}
+		if ($local_function !== null) {
+			$this->local_function = $local_function;
 		}
 	}
 
@@ -90,9 +94,17 @@ class Condition {
 	 * Set local_function
 	 *
 	 * @access public
+	 * @param string $local_function
 	 */
 	public function set_local_function($local_function) {
 		$this->local_function = $local_function;
+	}
+
+	/**
+	 * Get local_function
+	 */
+	public function get_local_function() {
+		return $this->local_function;
 	}
 
 	/**
