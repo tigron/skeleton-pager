@@ -315,7 +315,7 @@ class Pager extends \Skeleton\Pager\Pager {
 		parse_str($qry_str, $qry_str_parts);
 		unset($qry_str_parts['p']);
 		unset($qry_str_parts['q']);
-		$pager_uri_key = base64_encode(strtolower($this->classname) . '/' . str_replace('/index', '', $request_uri) . '?' . implode('&', $qry_str_parts));
+		$pager_uri_key = base64_encode(strtolower($this->classname) . '/' . str_replace('/index', '', $request_uri) . '?' . http_build_query($qry_str_parts));
 
 		return $pager_uri_key;
 	}
