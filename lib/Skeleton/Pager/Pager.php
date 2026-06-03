@@ -442,7 +442,7 @@ class Pager {
 					if ($condition_key === '%search%') {
 						$conditions[$condition_key][$setting_key] = $setting;
 					} else {
-						$conditions[$condition_key][$setting_key] = new Condition($setting['local_field'], $setting['comparison'], $setting['value'], $setting['local_function']);
+						$conditions[$condition_key][$setting_key] = new Condition($setting['local_field'], $setting['comparison'], $setting['value'], $setting['local_function'] ?? '');
 					}
 				}
 			}
